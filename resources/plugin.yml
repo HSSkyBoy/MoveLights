@@ -1,5 +1,5 @@
-name: MoveLight
-main: top.nkbe.MoveLight
+name: MoveLights
+main: top.nkbe.MoveLights
 version: 1.2.6
 author: NkBe, _TwT
 api-version: 1.17
@@ -8,18 +8,18 @@ commands:
     description: 完整命令
     usage: §a/<command> help 查看帮助
 permissions:
-  movelight.help:
+  movelights.help:
     description: "查看帮助"
     default: true
-  movelight.reload:
+  movelights.reload:
     description: "重载插件配置"
     default: op
-  movelight.toggle:
+  movelights.toggle:
     description: "总开关移动光源"
     default: op
-  movelight.player.use:
+  movelights.player.use:
     description: "玩家能使用移动光源"
     default: true
-  movelight.player.onoff:
+  movelights.player.onoff:
     description: "玩家对自己开关移动光源"
     default: true

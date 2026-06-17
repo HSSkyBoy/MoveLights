@@ -49,7 +49,7 @@ public class LightManager extends BukkitRunnable {
             boolean apparel = plugin.getConfig().getBoolean("usable." + key + ".apparel", false);
             this.usableItemsInfo.put(key, new UsableInfo(key, level, apparel));
         }
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLight§8] §a已從設定檔載入 " + usableItemsInfo.size() + " 件發光物品.");
+        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §a已從設定檔載入 " + usableItemsInfo.size() + " 件發光物品.");
     }
 
     @Override
@@ -57,7 +57,7 @@ public class LightManager extends BukkitRunnable {
         if (!plugin.getConfig().getBoolean("enable") || suspended) return;
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            if (!player.hasPermission("movelight.player.use")) {
+            if (!player.hasPermission("movelights.player.use")) {
                 removePlayerLight(player);
                 continue;
             }

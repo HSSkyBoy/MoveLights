@@ -8,7 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class MoveLight extends JavaPlugin implements Listener {
+public class MoveLights extends JavaPlugin implements Listener {
 
     private LightManager lightManager;
 
@@ -18,20 +18,30 @@ public class MoveLight extends JavaPlugin implements Listener {
         Bukkit.getPluginManager().registerEvents(this, this);
 
         startLightTask();
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLight§8] §e已啟用跨版本相容 (1.17 - 26.1.x)");
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLight§8] §a移動光源加載成功");
+
+        // bStats
+        int pluginId = 32054;
+        Metrics metrics = new Metrics(this, pluginId);
+
+        // Optional: Add custom charts
+        metrics.addCustomChart(
+            new Metrics.SimplePie("chart_id", () -> "My value")
+        );
+
+        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §e已啟用跨版本相容 (1.17 - 26.1.x)");
+        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §a移動光源加載成功");
     }
 
     @Override
     public void onDisable() {
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLight§8] §6正在卸載移動光源...");
+        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §6正在卸載移動光源...");
 
         if (this.lightManager != null) {
             this.lightManager.removeAllPlayerLight();
             this.lightManager.cancel();
         }
 
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLight§8] §a移動光源卸載完成");
+        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §a移動光源卸載完成");
     }
 
     //定時重啟
@@ -65,12 +75,12 @@ public class MoveLight extends JavaPlugin implements Listener {
     }
 
     public void showHelp(CommandSender sender) {
-        if (!sender.hasPermission("movelight.help")) {
-            sender.sendMessage("§8[§aMoveLight§8] §c你沒有權限使用該命令");
+        if (!sender.hasPermission("movelights.help")) {
+            sender.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用該命令");
             return;
         }
 
-        sender.sendMessage(" §2§lMoveLight 虛擬移動光源");
+        sender.sendMessage(" §2§lMoveLights 虛擬移動光源");
         sender.sendMessage("");
         sender.sendMessage(" §7§l· §a/movel reload §6§l- §7重載插件");
         sender.sendMessage(" §7§l· §a/movel toggle §6§l- §7開關移動光源");
@@ -78,8 +88,8 @@ public class MoveLight extends JavaPlugin implements Listener {
     }
 
     public void reload(CommandSender sender) {
-        if (!sender.hasPermission("movelight.reload")) {
-            sender.sendMessage("§8[§aMoveLight§8] §c你沒有權限使用該命令");
+        if (!sender.hasPermission("movelights.reload")) {
+            sender.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用該命令");
             return;
         }
 
@@ -88,12 +98,12 @@ public class MoveLight extends JavaPlugin implements Listener {
             this.lightManager.removeAllPlayerLight();
         }
         startLightTask();
-        sender.sendMessage("§8[§aMoveLight§8] §a重載完成！");
+        sender.sendMessage("§8[§aMoveLights§8] §a重載完成！");
     }
 
     public void toggle(CommandSender sender) {
-        if (!sender.hasPermission("movelight.toggle")) {
-            sender.sendMessage("§8[§aMoveLight§8] §c你沒有權限使用該命令");
+        if (!sender.hasPermission("movelights.toggle")) {
+            sender.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用該命令");
             return;
         }
 
@@ -102,9 +112,9 @@ public class MoveLight extends JavaPlugin implements Listener {
         saveConfig();
 
         if (!currentState) {
-            sender.sendMessage("§8[§aMoveLight§8] §6已經開啟移動光源");
+            sender.sendMessage("§8[§aMoveLights§8] §6已經開啟移動光源");
         } else {
-            sender.sendMessage("§8[§aMoveLight§8] §6已經關閉移動光源");
+            sender.sendMessage("§8[§aMoveLights§8] §6已經關閉移動光源");
             if (this.lightManager != null) {
                 this.lightManager.removeAllPlayerLight();
             }

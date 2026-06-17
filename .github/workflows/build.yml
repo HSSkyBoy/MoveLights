@@ -1,4 +1,4 @@
-name: Build MoveLight
+name: Build MoveLights
 
 on:
   push:
@@ -43,7 +43,7 @@ jobs:
           java-version: ${{ matrix.jdk_version }}
           distribution: 'zulu'
 
-      - name: 編譯與打包 MoveLight (${{ matrix.target_name }})
+      - name: 編譯與打包 MoveLights (${{ matrix.target_name }})
         run: |
           mkdir -p out/classes
           
@@ -57,10 +57,10 @@ jobs:
           cp resources/plugin.yml out/classes/
           if [ -f resources/config.yml ]; then cp resources/config.yml out/classes/; fi
           
-          jar cvf MoveLight-${{ matrix.target_name }}.jar -C out/classes .
+          jar cvf MoveLights-${{ matrix.target_name }}.jar -C out/classes .
 
       - name: 上傳構件產物
         uses: actions/upload-artifact@v4
         with:
-          name: MoveLight-${{ matrix.target_name }}
-          path: MoveLight-${{ matrix.target_name }}.jar
+          name: MoveLights-${{ matrix.target_name }}
+          path: MoveLights-${{ matrix.target_name }}.jar
