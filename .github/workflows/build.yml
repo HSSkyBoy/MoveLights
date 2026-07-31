@@ -33,6 +33,11 @@ jobs:
             jdk_version: "25"
             java_release: "25"
 
+          - target_name: "26.2"
+            api_jar: "spigot-api-26.2-R0.1-20260725.jar"
+            jdk_version: "25"
+            java_release: "25"
+
     steps:
       - name: 檢出專案程式碼
         uses: actions/checkout@v4
@@ -52,7 +57,7 @@ jobs:
             exit 1
           fi
           
-          javac --release ${{ matrix.java_release }} -d out/classes -cp "lib/${{ matrix.api_jar }}" src/top/nkbe/*.java
+          javac --release ${{ matrix.java_release }} -d out/classes -cp "lib/${{ matrix.api_jar }}:lib/gson-2.10.1.jar" src/top/nkbe/*.java
           
           cp resources/plugin.yml out/classes/
           if [ -f resources/config.yml ]; then cp resources/config.yml out/classes/; fi
