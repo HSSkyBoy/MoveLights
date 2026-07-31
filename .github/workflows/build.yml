@@ -61,6 +61,9 @@ jobs:
           
           cp resources/plugin.yml out/classes/
           if [ -f resources/config.yml ]; then cp resources/config.yml out/classes/; fi
+          mkdir -p out/classes/lang
+          cp resources/lang/*.yml out/classes/lang/
+          cp resources/resourcepack.zip out/classes/
           
           jar cvf MoveLights-${{ matrix.target_name }}.jar -C out/classes .
 

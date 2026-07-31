@@ -1,3 +1,5 @@
+# 语言 (zh_TW / zh_CN / en)，讯息档在插件目录 lang/ 下可自行修改
+language: zh_TW
 # true(开), false(关)
 # 是否启用移动光源
 enable: true
@@ -77,3 +79,13 @@ chat-emoji:
 op-command:
   # 是否启用 /minecraft:op 授权指令 (关闭时回归原版行为)
   enable: true
+
+# ===== 内建 emoji 资源包 =====
+emoji-pack:
+  # 是否启动内建资源包伺服器，并把资源包推送给 Java 端玩家
+  # (Bedrock/Geyser 跨端原生支持 emoji，不受影响)
+  enable: true
+  # 资源包伺服器端口
+  port: 8399
+  # 伺服器对外位址，留空自动侦测；公网/NAT 建议填网域或公网 IP
+  host: ""

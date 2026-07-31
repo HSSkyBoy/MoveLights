@@ -42,10 +42,24 @@ chat-emoji:
     ":tick:": "✔"
 ```
 
+插件内建 **emoji 资源包**（Twemoji，CC-BY 4.0），启动后会自动把资源包推送给 Java 端玩家，让彩色 emoji 正常显示；**Bedrock/Geyser 跨端原生支持 emoji**，不受影响。相关设置：
+
+```yaml
+emoji-pack:
+  enable: true     # 是否启动内建资源包伺服器并推送
+  port: 8399       # 资源包伺服器端口
+  host: ""         # 伺服器对外位址，留空自动侦测；公网/NAT 建议填网域或公网 IP
+```
+
+> 注意：资源包伺服器端口需在防火墙/机房开放，公网服务器建议在 `host` 填对外网域或 IP。
+
 ## ⚙️ 设定档说明 (`config.yml`)
 您可以透过设定档精细控制插件行为：
 
 ```yaml
+# 语言 (zh_TW / zh_CN / en)，讯息档在插件目录 lang/ 下可自行修改
+language: zh_TW
+
 # 是否启用移动光源功能
 enable: true
 

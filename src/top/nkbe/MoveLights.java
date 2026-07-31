@@ -7,22 +7,30 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class MoveLights extends JavaPlugin implements Listener {
 
     private LightManager lightManager;
     private NoteManager noteManager;
+    private Lang lang;
+    private EmojiPackServer emojiPackServer;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
+        this.lang = new Lang(this);
         this.noteManager = new NoteManager(this);
 
         Bukkit.getPluginManager().registerEvents(this, this);
         Bukkit.getPluginManager().registerEvents(new ChatListener(this), this);
 
+        startEmojiPackServer();
         startLightTask();
 
         // bStats
@@ -34,20 +42,64 @@ public class MoveLights extends JavaPlugin implements Listener {
             new Metrics.SimplePie("chart_id", () -> "My value")
         );
 
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §e已啟用跨版本相容 (1.17 - 26.2.x)");
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §a移動光源 + 聊天增強加載成功");
+        this.lang.send(Bukkit.getConsoleSender(), "compat-version");
+        this.lang.send(Bukkit.getConsoleSender(), "enable-success");
     }
 
     @Override
     public void onDisable() {
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §6正在卸載移動光源...");
+        this.lang.send(Bukkit.getConsoleSender(), "disable-start");
 
         if (this.lightManager != null) {
             this.lightManager.removeAllPlayerLight();
             this.lightManager.cancel();
         }
+        if (this.emojiPackServer != null) {
+            this.emojiPackServer.stop();
+            this.emojiPackServer = null;
+        }
 
-        Bukkit.getConsoleSender().sendMessage("§8[§aMoveLights§8] §a移動光源卸載完成");
+        this.lang.send(Bukkit.getConsoleSender(), "disable-success");
+    }
+
+    // 啟動內建 emoji 資源包伺服器（供 Java 端玩家下載）
+    private void startEmojiPackServer() {
+        if (this.emojiPackServer != null) {
+            this.emojiPackServer.stop();
+            this.emojiPackServer = null;
+        }
+        if (!getConfig().getBoolean("emoji-pack.enable", true)) return;
+
+        try (InputStream in = getResource("resourcepack.zip")) {
+            if (in == null) {
+                getLogger().warning("找不到內建資源包 resourcepack.zip");
+                return;
+            }
+            byte[] pack = readAll(in);
+            this.emojiPackServer = new EmojiPackServer(this, pack,
+                    getConfig().getInt("emoji-pack.port", 8399),
+                    getConfig().getString("emoji-pack.host", ""));
+            this.emojiPackServer.start();
+            getLogger().info("emoji 資源包伺服器: " + this.emojiPackServer.getUrl());
+        } catch (IOException e) {
+            getLogger().warning("無法啟動 emoji 資源包伺服器: " + e.getMessage());
+            this.emojiPackServer = null;
+        }
+    }
+
+    private static byte[] readAll(InputStream in) throws IOException {
+        java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+        byte[] buf = new byte[8192];
+        int n;
+        while ((n = in.read(buf)) != -1) out.write(buf, 0, n);
+        return out.toByteArray();
+    }
+
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (this.emojiPackServer != null) {
+            event.getPlayer().setResourcePack(this.emojiPackServer.getUrl(), this.emojiPackServer.getHash());
+        }
     }
 
     //定時重啟
@@ -97,13 +149,13 @@ public class MoveLights extends JavaPlugin implements Listener {
         if (!getConfig().getBoolean("op-command.enable", true)) return;
 
         if (!player.hasPermission("movelights.op")) {
-            player.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用 /minecraft:op");
+            this.lang.send(player, "op-no-permission");
             event.setCancelled(true);
             return;
         }
 
         if (parts.length < 2) {
-            player.sendMessage("§8[§aMoveLights§8] §c用法: /minecraft:op <玩家或備註名>");
+            this.lang.send(player, "op-usage");
             event.setCancelled(true);
             return;
         }
@@ -116,99 +168,101 @@ public class MoveLights extends JavaPlugin implements Listener {
         }
 
         if (target == null) {
-            player.sendMessage("§8[§aMoveLights§8] §c找不到線上玩家: " + parts[1]);
+            this.lang.send(player, "op-player-notfound", parts[1]);
             event.setCancelled(true);
             return;
         }
 
         target.setOp(true);
-        player.sendMessage("§8[§aMoveLights§8] §a已授予 " + target.getName() + " op 權限");
-        target.sendMessage("§8[§aMoveLights§8] §6你已被 " + player.getName() + " 授予 op 權限");
+        this.lang.send(player, "op-granted", target.getName());
+        this.lang.send(target, "op-received", player.getName());
         event.setCancelled(true);
     }
 
     // 玩家備註管理：/movel note <玩家> <備註名> | remove | list
     private void noteCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("movelights.note")) {
-            sender.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用該命令");
+            this.lang.send(sender, "no-permission");
             return;
         }
 
         if (args.length < 2) {
-            sender.sendMessage("§8[§aMoveLights§8] §e用法: /movel note <玩家> <備註名>");
-            sender.sendMessage("§8[§aMoveLights§8] §e      /movel note remove <玩家|備註名>");
-            sender.sendMessage("§8[§aMoveLights§8] §e      /movel note list");
+            this.lang.send(sender, "note-usage-set");
+            this.lang.send(sender, "note-usage-remove");
+            this.lang.send(sender, "note-usage-list");
             return;
         }
 
         if (args[1].equalsIgnoreCase("list")) {
             if (this.noteManager.getNotes().isEmpty()) {
-                sender.sendMessage("§8[§aMoveLights§8] §e目前沒有任何備註");
+                this.lang.send(sender, "note-empty");
                 return;
             }
-            sender.sendMessage("§8[§aMoveLights§8] §a目前備註列表:");
+            this.lang.send(sender, "note-list-header");
             for (var entry : this.noteManager.getNotes().entrySet()) {
-                sender.sendMessage(" §7" + entry.getKey() + " §8-> §f" + entry.getValue());
+                this.lang.sendRaw(sender, "note-list-item", entry.getKey(), entry.getValue());
             }
             return;
         }
 
         if (args[1].equalsIgnoreCase("remove")) {
             if (args.length < 3) {
-                sender.sendMessage("§8[§aMoveLights§8] §c用法: /movel note remove <玩家|備註名>");
+                this.lang.send(sender, "note-remove-usage");
                 return;
             }
             if (this.noteManager.removeNote(args[2])) {
-                sender.sendMessage("§8[§aMoveLights§8] §a已移除備註: " + args[2]);
+                this.lang.send(sender, "note-remove-success", args[2]);
             } else {
-                sender.sendMessage("§8[§aMoveLights§8] §c找不到該備註: " + args[2]);
+                this.lang.send(sender, "note-remove-notfound", args[2]);
             }
             return;
         }
 
         // /movel note <玩家> <備註名>
         if (args.length < 3) {
-            sender.sendMessage("§8[§aMoveLights§8] §c用法: /movel note <玩家> <備註名>");
+            this.lang.send(sender, "note-set-usage");
             return;
         }
         boolean existed = this.noteManager.setNote(args[1], args[2]);
-        sender.sendMessage("§8[§aMoveLights§8] §a已" + (existed ? "覆寫" : "設定") + "備註: " + args[1]
-                + " -> " + args[2]);
+        String action = existed ? this.lang.get("note-set-overwrite") : this.lang.get("note-set-new");
+        this.lang.send(sender, "note-set-success", action, args[1], args[2]);
     }
 
     public void showHelp(CommandSender sender) {
         if (!sender.hasPermission("movelights.help")) {
-            sender.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用該命令");
+            this.lang.send(sender, "no-permission");
             return;
         }
 
-        sender.sendMessage(" §2§lMoveLights 虛擬移動光源 + 聊天增強");
-        sender.sendMessage("");
-        sender.sendMessage(" §7§l· §a/movel reload §6§l- §7重載插件");
-        sender.sendMessage(" §7§l· §a/movel toggle §6§l- §7開關移動光源");
-        sender.sendMessage(" §7§l· §a/movel note §6§l- §7設定玩家備註");
-        sender.sendMessage(" §7§l· §a/minecraft:op <玩家|備註名> §6§l- §7授予 op");
-        sender.sendMessage(" §7§l· §7聊天打 :smile: 等代碼會轉成 emoji");
-        sender.sendMessage("");
+        this.lang.sendRaw(sender, "help-title");
+        this.lang.sendRaw(sender, "help-blank");
+        this.lang.sendRaw(sender, "help-reload");
+        this.lang.sendRaw(sender, "help-toggle");
+        this.lang.sendRaw(sender, "help-note");
+        this.lang.sendRaw(sender, "help-op");
+        this.lang.sendRaw(sender, "help-emoji");
+        this.lang.sendRaw(sender, "help-blank");
     }
 
     public void reload(CommandSender sender) {
         if (!sender.hasPermission("movelights.reload")) {
-            sender.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用該命令");
+            this.lang.send(sender, "no-permission");
             return;
         }
 
         reloadConfig();
+        this.lang = new Lang(this);
         if (this.lightManager != null) {
             this.lightManager.removeAllPlayerLight();
         }
+        startEmojiPackServer();
         startLightTask();
-        sender.sendMessage("§8[§aMoveLights§8] §a重載完成！");
+        this.lang.send(sender, "reload-success");
     }
 
     public void toggle(CommandSender sender) {
         if (!sender.hasPermission("movelights.toggle")) {
-            sender.sendMessage("§8[§aMoveLights§8] §c你沒有權限使用該命令");
+            this.lang.send(sender, "no-permission");
             return;
         }
 
@@ -217,9 +271,9 @@ public class MoveLights extends JavaPlugin implements Listener {
         saveConfig();
 
         if (!currentState) {
-            sender.sendMessage("§8[§aMoveLights§8] §6已經開啟移動光源");
+            this.lang.send(sender, "toggle-on");
         } else {
-            sender.sendMessage("§8[§aMoveLights§8] §6已經關閉移動光源");
+            this.lang.send(sender, "toggle-off");
             if (this.lightManager != null) {
                 this.lightManager.removeAllPlayerLight();
             }
