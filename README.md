@@ -8,8 +8,7 @@ MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插�
 * **高度自定义**：可自由设定哪些物品具备发光功能、发光的亮度等级（0-15），以及物品是否必须「穿戴」才生效。
 * **智能搜寻演算**：自动搜寻玩家周遭的空气、洞穴空气或虚空空气来放置虚拟光源，并会根据玩家视角（如俯视时）优化光源位置。
 * **聊天 emoji**：聊天时输入 `:smile:`、`:heart:` 等代码自动转换成 emoji，对照表可自定义。
-* **玩家备注**：为玩家设定备注名，之后所有需要玩家名的指令（如 `/minecraft:op`）都能直接用备注名代替。
-* **`/minecraft:op` 授权**：可让指定玩家（预设所有人）直接授予其他玩家 op 权限，服主可透过权限节点或 config 控制。
+* **玩家备注**：为玩家设定备注名，之后所有需要玩家名的指令（如 `/kill`、`/tp`）都能直接用备注名代替。
 
 ## 🛠️ 安装与环境
 * **API 版本**：适用于 Spigot/Paper 1.17 - 26.2.x。
@@ -25,11 +24,9 @@ MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插�
 | `/movel note <玩家> <备注名>` | 为玩家设定备注名 | `movelights.note` |
 | `/movel note remove <玩家\|备注名>` | 移除备注 | `movelights.note` |
 | `/movel note list` | 列出所有备注 | `movelights.note` |
-| `/minecraft:op <玩家\|备注名>` | 授予玩家 op 权限（默认所有人可用） | `movelights.op` |
 
 ### 其他权限
 * `movelights.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
-* `movelights.op`：是否可使用 `/minecraft:op` 授予 op（预设所有人，服主可收回）。
 * `movelights.note`：是否可设定/管理玩家备注（预设只有 op）。
 
 ### 😀 聊天 emoji
@@ -42,7 +39,7 @@ chat-emoji:
     ":tick:": "✔"
 ```
 
-插件内建 **emoji 资源包**（Twemoji，CC-BY 4.0），启动后会自动把资源包推送给 Java 端玩家，让彩色 emoji 正常显示；**Bedrock/Geyser 跨端原生支持 emoji**，不受影响。相关设置：
+插件内建 **emoji 资源包**（Microsoft Fluent Emoji 3D，MIT），启动后会自动把资源包推送给 Java 端玩家，让彩色 emoji 正常显示；**Bedrock/Geyser 跨端原生支持 emoji**，不受影响。相关设置：
 
 ```yaml
 emoji-pack:

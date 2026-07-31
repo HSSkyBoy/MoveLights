@@ -13,6 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MoveLights extends JavaPlugin implements Listener {
 
@@ -134,6 +136,32 @@ public class MoveLights extends JavaPlugin implements Listener {
         return true;
     }
 
+    // /movel 的 Tab 補全：依權限顯示可用子指令
+    @Override
+    public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        List<String> list = new ArrayList<>();
+        if (args.length == 1) {
+            if (sender.hasPermission("movelights.help")) list.add("help");
+            if (sender.hasPermission("movelights.toggle")) list.add("toggle");
+            if (sender.hasPermission("movelights.reload")) list.add("reload");
+            if (sender.hasPermission("movelights.note")) list.add("note");
+        } else if (args.length == 2 && args[0].equalsIgnoreCase("note")
+                && sender.hasPermission("movelights.note")) {
+            list.add("list");
+            list.add("remove");
+        } else if (args.length == 3 && args[0].equalsIgnoreCase("note")
+                && args[1].equalsIgnoreCase("remove") && sender.hasPermission("movelights.note")) {
+            list.addAll(this.noteManager.getNotes().keySet());
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                list.add(p.getName());
+            }
+        }
+
+        String prefix = args[args.length - 1].toLowerCase();
+        list.removeIf(s -> !s.toLowerCase().startsWith(prefix));
+        return list;
+    }
+
     // 攔截 /minecraft:op，改由插件授權 op（權限 movelights.op，預設所有人）
     @EventHandler
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
@@ -177,6 +205,38 @@ public class MoveLights extends JavaPlugin implements Listener {
         this.lang.send(player, "op-granted", target.getName());
         this.lang.send(target, "op-received", player.getName());
         event.setCancelled(true);
+    }
+
+    // 所有指令都支援備註名：把參數中符合備註名的部分換成真實玩家名（如 /kill、/tp）
+    @EventHandler
+    public void onPlayerCommandResolve(PlayerCommandPreprocessEvent event) {
+        if (event.isCancelled()) return;
+        String msg = event.getMessage();
+        if (msg.length() < 2 || msg.charAt(0) != '/') return;
+        // 跳過插件自己的指令（備註管理），避免改動到 note 命令本身的參數
+        if (msg.toLowerCase().startsWith("/movel")) return;
+
+        String[] parts = msg.substring(1).split("\\s+");
+        if (parts.length < 2) return;
+
+        boolean changed = false;
+        for (int i = 1; i < parts.length; i++) {
+            String arg = parts[i];
+            if (arg.isEmpty()) continue;
+            char c0 = arg.charAt(0);
+            // 跳過選擇器(@p)、相對座標(~ ^)、負數與純數字（座標），避免誤替換
+            if (c0 == '@' || c0 == '~' || c0 == '^' || c0 == '-' || arg.matches("\\d+(\\.\\d+)?")) {
+                continue;
+            }
+            String resolved = this.noteManager.resolvePlayerName(arg);
+            if (!resolved.equals(arg)) {
+                parts[i] = resolved;
+                changed = true;
+            }
+        }
+        if (changed) {
+            event.setMessage("/" + String.join(" ", parts));
+        }
     }
 
     // 玩家備註管理：/movel note <玩家> <備註名> | remove | list

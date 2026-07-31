@@ -3,7 +3,7 @@ package top.nkbe;
 import java.util.HashMap;
 import java.util.Map;
 
-/** 內建 emoji 對照表（由 tools/EmojiPackTool.java 產生） */
+/** 內建 emoji 對照表（由 tools/emoji_pack.py 產生） */
 public final class EmojiData {
 
     public static final Map<String, String> BUILTIN = new HashMap<>();
