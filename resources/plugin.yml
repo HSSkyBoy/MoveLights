@@ -4,10 +4,23 @@ version: 1.4.0
 author: NkBe, _TwT
 api-version: 1.17
 commands:
-  nyae:
+  nyaee:
     description: 主命令
     usage: §a/<command> help 查看帮助
-    aliases: [nyaemc, movel]
+    aliases: [nyae, nyaemc, movel]
+  nick:
+    description: 設定暱稱
+    usage: §a/nick <暱稱|off>
+  realname:
+    description: 由暱稱查詢真實玩家名
+    usage: §a/realname <暱稱>
+  ping:
+    description: 查看延遲
+    usage: §a/ping [玩家]
+  broadcast:
+    description: 發送全服公告
+    usage: §a/broadcast <訊息>
+    aliases: [bc]
 permissions:
   nyaemc.help:
     description: "查看帮助"
@@ -30,3 +43,24 @@ permissions:
   nyaemc.op:
     description: "可使用 /minecraft:op 授予其他玩家 op 权限"
     default: true
+  nyaemc.nick:
+    description: "設定自己的暱稱"
+    default: true
+  nyaemc.nick.others:
+    description: "設定其他玩家的暱稱"
+    default: op
+  nyaemc.nick.color:
+    description: "在暱稱使用顏色代碼"
+    default: op
+  nyaemc.chat.color:
+    description: "在聊天使用顏色代碼"
+    default: op
+  nyaemc.ping:
+    description: "查看延遲"
+    default: true
+  nyaemc.ping.others:
+    description: "查看其他玩家的延遲"
+    default: op
+  nyaemc.broadcast:
+    description: "發送全服公告"
+    default: op

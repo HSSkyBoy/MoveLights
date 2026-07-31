@@ -20,9 +20,13 @@ public class ChatListener implements Listener {
 
     private static final Pattern EMOJI_PATTERN = Pattern.compile(":[a-zA-Z0-9_]+:");
 
+    private final boolean enabled;
+    private final boolean colorEnabled;
     private final Map<String, String> custom = new HashMap<>();
 
     public ChatListener(JavaPlugin plugin) {
+        this.enabled = plugin.getConfig().getBoolean("chat-emoji.enable", true);
+        this.colorEnabled = plugin.getConfig().getBoolean("chat.color.enable", true);
         ConfigurationSection section = plugin.getConfig().getConfigurationSection("chat-emoji.custom");
         if (section != null) {
             for (String key : section.getKeys(false)) {
@@ -38,7 +42,10 @@ public class ChatListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         String message = event.getMessage();
-        String replaced = replaceEmoji(message);
+        if (colorEnabled && event.getPlayer().hasPermission("nyaemc.chat.color")) {
+            message = org.bukkit.ChatColor.translateAlternateColorCodes('&', message);
+        }
+        String replaced = enabled ? replaceEmoji(message) : message;
         if (!replaced.equals(message)) {
             event.setMessage(replaced);
         }

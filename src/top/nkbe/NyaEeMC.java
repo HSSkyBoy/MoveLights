@@ -1,10 +1,12 @@
 package top.nkbe;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -20,17 +22,20 @@ public class NyaEeMC extends JavaPlugin implements Listener {
 
     private LightManager lightManager;
     private NoteManager noteManager;
+    private NickManager nickManager;
     private Lang lang;
     private EmojiPackServer emojiPackServer;
+    private ChatListener chatListener;
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         this.lang = new Lang(this);
         this.noteManager = new NoteManager(this);
+        this.nickManager = new NickManager(this);
 
         Bukkit.getPluginManager().registerEvents(this, this);
-        Bukkit.getPluginManager().registerEvents(new ChatListener(this), this);
+        registerChatListener();
 
         startEmojiPackServer();
         startLightTask();
@@ -62,6 +67,14 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         }
 
         this.lang.send(Bukkit.getConsoleSender(), "disable-success");
+    }
+
+    private void registerChatListener() {
+        if (this.chatListener != null) {
+            HandlerList.unregisterAll(this.chatListener);
+        }
+        this.chatListener = new ChatListener(this);
+        Bukkit.getPluginManager().registerEvents(this.chatListener, this);
     }
 
     // 啟動內建 emoji 資源包伺服器（供 Java 端玩家下載）
@@ -99,9 +112,12 @@ public class NyaEeMC extends JavaPlugin implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        this.nickManager.apply(event.getPlayer());
         if (this.emojiPackServer != null) {
             event.getPlayer().setResourcePack(this.emojiPackServer.getUrl(), this.emojiPackServer.getHash());
         }
+        String joinMessage = formatServerMessage("chat.join-message", event.getPlayer().getDisplayName());
+        if (joinMessage != null) event.setJoinMessage(joinMessage);
     }
 
     //定時重啟
@@ -120,10 +136,34 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             // 玩家退出時清除狀態
             this.lightManager.removePlayerLight(e.getPlayer());
         }
+        String quitMessage = formatServerMessage("chat.quit-message", e.getPlayer().getDisplayName());
+        if (quitMessage != null) e.setQuitMessage(quitMessage);
+    }
+
+    private String formatServerMessage(String path, String playerName) {
+        String message = getConfig().getString(path, "");
+        if (message.isEmpty()) return null;
+        return ChatColor.translateAlternateColorCodes('&', message.replace("{0}", playerName));
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        switch (command.getName().toLowerCase()) {
+            case "nick":
+                nickCommand(sender, args);
+                return true;
+            case "realname":
+                realNameCommand(sender, args);
+                return true;
+            case "ping":
+                pingCommand(sender, args);
+                return true;
+            case "broadcast":
+                broadcastCommand(sender, args);
+                return true;
+            default:
+                break;
+        }
         if (args.length < 1 || args[0].equalsIgnoreCase("help")) {
             this.showHelp(sender);
         } else if (args[0].equalsIgnoreCase("reload")) {
@@ -132,19 +172,163 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             this.toggle(sender);
         } else if (args[0].equalsIgnoreCase("note")) {
             this.noteCommand(sender, args);
+        } else if (args[0].equalsIgnoreCase("nick")) {
+            nickCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("realname")) {
+            realNameCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("ping")) {
+            pingCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("broadcast")) {
+            broadcastCommand(sender, sliceArgs(args));
         }
         return true;
+    }
+
+    private static String[] sliceArgs(String[] args) {
+        String[] result = new String[args.length - 1];
+        System.arraycopy(args, 1, result, 0, result.length);
+        return result;
+    }
+
+    private void nickCommand(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) {
+            this.lang.send(sender, "player-only");
+            return;
+        }
+        Player target = (Player) sender;
+        String nickname;
+        if (args.length == 1) {
+            nickname = args[0];
+        } else if (args.length == 2 && sender.hasPermission("nyaemc.nick.others")) {
+            target = Bukkit.getPlayer(args[0]);
+            if (target == null) {
+                this.lang.send(sender, "player-notfound", args[0]);
+                return;
+            }
+            nickname = args[1];
+        } else {
+            this.lang.send(sender, "nick-usage");
+            return;
+        }
+
+        if (target.equals(sender) && !sender.hasPermission("nyaemc.nick")) {
+            this.lang.send(sender, "no-permission");
+            return;
+        }
+        if (!target.equals(sender) && !sender.hasPermission("nyaemc.nick.others")) {
+            this.lang.send(sender, "no-permission");
+            return;
+        }
+
+        if (nickname.equalsIgnoreCase("off")) {
+            if (this.nickManager.clearNickname(target)) {
+                this.lang.send(sender, "nick-cleared", target.getName());
+            } else {
+                this.lang.send(sender, "nick-not-set", target.getName());
+            }
+            return;
+        }
+
+        boolean usesColorCode = nickname.indexOf('&') >= 0 || nickname.indexOf('§') >= 0;
+        if (usesColorCode && !sender.hasPermission("nyaemc.nick.color")) {
+            this.lang.send(sender, "nick-color-no-permission");
+            return;
+        }
+        String coloredNickname = ChatColor.translateAlternateColorCodes('&', nickname);
+        String visibleNickname = ChatColor.stripColor(coloredNickname);
+        if (visibleNickname == null || visibleNickname.isEmpty() || visibleNickname.length() > 16) {
+            this.lang.send(sender, "nick-invalid");
+            return;
+        }
+
+        this.nickManager.setNickname(target, nickname);
+        this.lang.send(sender, "nick-set", target.getName(), coloredNickname);
+        if (!target.equals(sender)) this.lang.send(target, "nick-set-by-other", coloredNickname, sender.getName());
+    }
+
+    private void realNameCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.nick")) {
+            this.lang.send(sender, "no-permission");
+            return;
+        }
+        if (args.length != 1) {
+            this.lang.send(sender, "realname-usage");
+            return;
+        }
+        String name = this.nickManager.getRealName(args[0]);
+        if (name == null) {
+            this.lang.send(sender, "realname-notfound", args[0]);
+            return;
+        }
+        this.lang.send(sender, "realname-result", args[0], name);
+    }
+
+    private void pingCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.ping")) {
+            this.lang.send(sender, "no-permission");
+            return;
+        }
+        Player target;
+        if (args.length == 0 && sender instanceof Player) {
+            target = (Player) sender;
+        } else if (args.length == 1 && sender.hasPermission("nyaemc.ping.others")) {
+            target = Bukkit.getPlayer(args[0]);
+        } else {
+            this.lang.send(sender, "ping-usage");
+            return;
+        }
+        if (target == null) {
+            this.lang.send(sender, "player-notfound", args.length == 0 ? "" : args[0]);
+            return;
+        }
+        this.lang.send(sender, "ping-result", target.getName(), target.getPing());
+    }
+
+    private void broadcastCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.broadcast")) {
+            this.lang.send(sender, "no-permission");
+            return;
+        }
+        if (args.length == 0) {
+            this.lang.send(sender, "broadcast-usage");
+            return;
+        }
+        String message = String.join(" ", args);
+        if (sender.hasPermission("nyaemc.chat.color")) {
+            message = ChatColor.translateAlternateColorCodes('&', message);
+        }
+        Bukkit.broadcastMessage(this.lang.get("broadcast-format", message));
     }
 
     // /movel 的 Tab 補全：依權限顯示可用子指令
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> list = new ArrayList<>();
-        if (args.length == 1) {
+        if (command.getName().equalsIgnoreCase("nick")) {
+            if (args.length == 1) list.add("off");
+            if (args.length == 1 && sender.hasPermission("nyaemc.nick.others")) {
+                for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+            }
+        } else if (command.getName().equalsIgnoreCase("ping") && args.length == 1
+                && sender.hasPermission("nyaemc.ping.others")) {
+            for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+        } else if (args.length == 1) {
             if (sender.hasPermission("nyaemc.help")) list.add("help");
             if (sender.hasPermission("nyaemc.toggle")) list.add("toggle");
             if (sender.hasPermission("nyaemc.reload")) list.add("reload");
             if (sender.hasPermission("nyaemc.note")) list.add("note");
+            if (sender.hasPermission("nyaemc.nick")) list.add("nick");
+            if (sender.hasPermission("nyaemc.nick")) list.add("realname");
+            if (sender.hasPermission("nyaemc.ping")) list.add("ping");
+            if (sender.hasPermission("nyaemc.broadcast")) list.add("broadcast");
+        } else if (args[0].equalsIgnoreCase("nick")) {
+            if (args.length == 2) list.add("off");
+            if (args.length == 2 && sender.hasPermission("nyaemc.nick.others")) {
+                for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+            }
+        } else if (args[0].equalsIgnoreCase("ping") && args.length == 2
+                && sender.hasPermission("nyaemc.ping.others")) {
+            for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
         } else if (args.length == 2 && args[0].equalsIgnoreCase("note")
                 && sender.hasPermission("nyaemc.note")) {
             list.add("list");
@@ -157,7 +341,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             }
         }
 
-        String prefix = args[args.length - 1].toLowerCase();
+        String prefix = args.length == 0 ? "" : args[args.length - 1].toLowerCase();
         list.removeIf(s -> !s.toLowerCase().startsWith(prefix));
         return list;
     }
@@ -215,7 +399,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         // 跳過插件自己的指令（備註管理），避免改動到 note 命令本身的參數
         String cmd = msg.toLowerCase();
         // 跳過插件自己的指令（備註管理）與 op 指令（已自行處理）
-        if (cmd.startsWith("/nyae ") || cmd.equals("/nyae")
+        if (cmd.startsWith("/nyaee ") || cmd.equals("/nyaee") || cmd.startsWith("/nyae ") || cmd.equals("/nyae")
                 || cmd.startsWith("/nyaemc") || cmd.startsWith("/movel")
                 || cmd.startsWith("/minecraft:op")) return;
 
@@ -304,6 +488,8 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         this.lang.sendRaw(sender, "help-note");
         this.lang.sendRaw(sender, "help-op");
         this.lang.sendRaw(sender, "help-emoji");
+        this.lang.sendRaw(sender, "help-nick");
+        this.lang.sendRaw(sender, "help-ping");
         this.lang.sendRaw(sender, "help-blank");
     }
 
@@ -315,6 +501,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
 
         reloadConfig();
         this.lang = new Lang(this);
+        registerChatListener();
         if (this.lightManager != null) {
             this.lightManager.removeAllPlayerLight();
         }

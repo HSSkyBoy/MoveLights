@@ -18,18 +18,25 @@ NyaEeMC 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前�
 ### 指令表
 | 指令 | 说明 | 权限要求 |
 | :--- | :--- | :--- |
-| `/nyae help` | 显示插件帮助选单 | `nyaemc.help` |
-| `/nyae toggle` | 全域开启或关闭移动光源功能 | `nyaemc.toggle` |
-| `/nyae reload` | 重载设定档并重新启动光源任务 | `nyaemc.reload` |
-| `/nyae note <玩家> <备注名>` | 为玩家设定备注名 | `nyaemc.note` |
-| `/nyae note remove <玩家\|备注名>` | 移除备注 | `nyaemc.note` |
-| `/nyae note list` | 列出所有备注 | `nyaemc.note` |
+| `/nyaee help` | 显示插件帮助选单 | `nyaemc.help` |
+| `/nyaee toggle` | 全域开启或关闭移动光源功能 | `nyaemc.toggle` |
+| `/nyaee reload` | 重载设定档并重新启动光源任务 | `nyaemc.reload` |
+| `/nyaee note <玩家> <备注名>` | 为玩家设定备注名 | `nyaemc.note` |
+| `/nyaee note remove <玩家\|备注名>` | 移除备注 | `nyaemc.note` |
+| `/nyaee note list` | 列出所有备注 | `nyaemc.note` |
+| `/nick <暱稱\|off>` 或 `/nyaee nick <暱稱\|off>` | 設定或清除自己的暱稱 | `nyaemc.nick` |
+| `/nick <玩家> <暱稱\|off>` 或 `/nyaee nick <玩家> <暱稱\|off>` | 設定或清除其他玩家的暱稱 | `nyaemc.nick.others` |
+| `/realname <暱稱>` 或 `/nyaee realname <暱稱>` | 由暱稱查詢真實玩家名 | `nyaemc.nick` |
+| `/ping [玩家]` 或 `/nyaee ping [玩家]` | 查看延遲 | `nyaemc.ping`（查他人需 `nyaemc.ping.others`） |
+| `/broadcast <訊息>` 或 `/nyaee broadcast <訊息>` | 發送全服公告 | `nyaemc.broadcast` |
 
-> 主指令为 `/nyae`（别名 `/nyaemc`、`/movel` 保留兼容旧用法）。
+> 主指令为 `/nyaee`；`/nyae`、`/nyaemc`、`/movel` 保留为兼容别名。
 
 ### 其他权限
 * `nyaemc.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
 * `nyaemc.note`：是否可设定/管理玩家备注（预设只有 op）。
+* `nyaemc.nick.color`：是否可在暱稱使用 `&` 色碼（預設只有 op）。
+* `nyaemc.chat.color`：是否可在聊天與公告使用 `&` 色碼（預設只有 op）。
 
 ### 😀 聊天 emoji 怎麼用
 在聊天室輸入 `:代碼:`，外層的冒號不可省略，插件便會自動轉成 emoji。例如：
@@ -76,6 +83,17 @@ emoji-pack:
 > 注意：资源包伺服器端口需在防火墙/机房开放，公网服务器建议在 `host` 填对外网域或 IP。
 
 若 emoji 沒有顯示：確認使用最新版 jar、`emoji-pack.enable: true`、玩家已接受資源包，並檢查 `emoji-pack.host` 是否為玩家可連線的公開位址。代碼拼錯或漏掉冒號時，文字會維持原樣。
+
+### 💬 聊天與暱稱
+`/nick <暱稱>` 或 `/nyaee nick <暱稱>` 會同步更新聊天、Tab 列表與玩家頭上的顯示名稱，資料保存在 `nicknames.yml`，重進伺服器後仍會套用。以 `/nick off` 或 `/nyaee nick off` 還原真實名稱。
+
+```yaml
+chat:
+  color:
+    enable: true
+  join-message: "&e{0} 加入了伺服器" # 使用 {0} 顯示暱稱
+  quit-message: "&e{0} 離開了伺服器"
+```
 
 ## ⚙️ 设定档说明 (`config.yml`)
 您可以透过设定档精细控制插件行为：

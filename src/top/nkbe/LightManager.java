@@ -16,8 +16,8 @@ import java.util.*;
 public class LightManager extends BukkitRunnable {
 
     private final JavaPlugin plugin;
-    // 儲存玩家 UUID 與對應虛擬光源的座標
-    private final Map<UUID, Location> activeLights = new HashMap<>();
+    // 儲存玩家 UUID 與目前已送出的虛擬光源狀態
+    private final Map<UUID, ActiveLight> activeLights = new HashMap<>();
     // 儲存設定檔中允許發光的物品資料
     private final Map<String, UsableInfo> usableItemsInfo = new HashMap<>();
     private boolean suspended = false;
@@ -33,6 +33,16 @@ public class LightManager extends BukkitRunnable {
             {1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1},
             {1, 1, 0}, {-1, 1, 0}, {0, 1, 1}, {0, 1, -1}
     };
+
+    private static final class ActiveLight {
+        private final Location location;
+        private final int level;
+
+        private ActiveLight(Location location, int level) {
+            this.location = location;
+            this.level = level;
+        }
+    }
 
     public LightManager(JavaPlugin plugin) {
         this.plugin = plugin;
@@ -104,7 +114,8 @@ public class LightManager extends BukkitRunnable {
     // 更新玩家的虛擬光源
     private void updateVirtualLight(Player player, UsableInfo itemInfo) {
         Location targetLoc = findAirAround(player);
-        Location currentLoc = activeLights.get(player.getUniqueId());
+        ActiveLight current = activeLights.get(player.getUniqueId());
+        int level = Math.min(Math.max(itemInfo.lightLevel(), 0), 15);
 
         // 如果周圍找不到空氣就熄滅當前光源
         if (targetLoc == null) {
@@ -112,18 +123,32 @@ public class LightManager extends BukkitRunnable {
             return;
         }
 
-        if (targetLoc.equals(currentLoc)) return;
+        // Location.equals 也會比較 yaw/pitch；若直接使用它，玩家只是轉頭也會在每次刷新時
+        // 清除並重送封包。光源只與方塊座標、世界和亮度有關。
+        if (current != null && isSameBlock(targetLoc, current.location)) {
+            if (current.level == level) return;
+            sendVirtualLight(player, targetLoc, level);
+            activeLights.put(player.getUniqueId(), new ActiveLight(targetLoc, level));
+            return;
+        }
 
         // 向玩家發送該位置在伺服器上的原方塊
         removePlayerLight(player);
+        sendVirtualLight(player, targetLoc, level);
+        activeLights.put(player.getUniqueId(), new ActiveLight(targetLoc, level));
+    }
 
-        // 創建虛擬的 Light 方塊
+    private static boolean isSameBlock(Location first, Location second) {
+        return first.getWorld().equals(second.getWorld())
+                && first.getBlockX() == second.getBlockX()
+                && first.getBlockY() == second.getBlockY()
+                && first.getBlockZ() == second.getBlockZ();
+    }
+
+    private static void sendVirtualLight(Player player, Location location, int level) {
         Light lightData = (Light) Bukkit.createBlockData(Material.LIGHT);
-        lightData.setLevel(Math.min(Math.max(itemInfo.lightLevel(), 0), 15)); // 確保亮度在 0-15 之間
-
-        // 僅發送封包給客戶端
-        player.sendBlockChange(targetLoc, lightData);
-        activeLights.put(player.getUniqueId(), targetLoc);
+        lightData.setLevel(level);
+        player.sendBlockChange(location, lightData);
     }
 
     private Location findAirAround(Player player) {
@@ -140,9 +165,12 @@ public class LightManager extends BukkitRunnable {
         }
 
         for (int[] offset : offsets) {
-            Location target = loc.clone().add(offset[0], offset[1], offset[2]);
-            if (replaceableBlocks.contains(target.getBlock().getType())) {
-                return target;
+            int x = loc.getBlockX() + offset[0];
+            int y = loc.getBlockY() + offset[1];
+            int z = loc.getBlockZ() + offset[2];
+            if (replaceableBlocks.contains(loc.getWorld().getBlockAt(x, y, z).getType())) {
+                // 使用方塊座標，避免把玩家旋轉角度帶入光源狀態。
+                return new Location(loc.getWorld(), x, y, z);
             }
         }
         return null;
@@ -150,10 +178,10 @@ public class LightManager extends BukkitRunnable {
 
     // 清除指定玩家的虛擬光源
     public void removePlayerLight(Player player) {
-        Location currentLoc = activeLights.remove(player.getUniqueId());
-        if (currentLoc != null) {
+        ActiveLight current = activeLights.remove(player.getUniqueId());
+        if (current != null) {
             // 同步伺服器真實方塊
-            player.sendBlockChange(currentLoc, currentLoc.getBlock().getBlockData());
+            player.sendBlockChange(current.location, current.location.getBlock().getBlockData());
         }
     }
 
