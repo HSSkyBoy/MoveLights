@@ -64,3 +64,16 @@ usable:
   SOUL_LANTERN:
     lightLevel: 13
     apparel: false
+
+# ===== 聊天增強 =====
+chat-emoji:
+  # 是否启用聊天 emoji 转换 (在聊天中输入 :smile: 这类代码会转换成 emoji)
+  enable: true
+  # 自定义 emoji，key 为代码(可不含冒号)，value 为要显示的字符
+  custom:
+    # :tick: : "✔"
+
+# ===== /minecraft:op 指令 =====
+op-command:
+  # 是否启用 /minecraft:op 授权指令 (关闭时回归原版行为)
+  enable: true

@@ -1,5 +1,5 @@
 # MoveLights - 虚拟移动光源插件
-MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插件。它利用「虚拟封包模式」，让玩家在手持或穿戴发光物品时，能够照亮周围环境，且不会对地图方块造成任何实质变更。
+MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插件。它利用「虚拟封包模式」，让玩家在手持或穿戴发光物品时，能够照亮周围环境，且不会对地图方块造成任何实质变更。同时内建**聊天增强**功能（emoji 转换、玩家备注、`/minecraft:op` 授权）。
 
 
 ## 🌟 核心特性
@@ -7,9 +7,12 @@ MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插�
 * **多样化发光检测**：支援主手、副手以及全身装备栏（头盔、胸甲、护腿、靴子）的物品检测。
 * **高度自定义**：可自由设定哪些物品具备发光功能、发光的亮度等级（0-15），以及物品是否必须「穿戴」才生效。
 * **智能搜寻演算**：自动搜寻玩家周遭的空气、洞穴空气或虚空空气来放置虚拟光源，并会根据玩家视角（如俯视时）优化光源位置。
+* **聊天 emoji**：聊天时输入 `:smile:`、`:heart:` 等代码自动转换成 emoji，对照表可自定义。
+* **玩家备注**：为玩家设定备注名，之后所有需要玩家名的指令（如 `/minecraft:op`）都能直接用备注名代替。
+* **`/minecraft:op` 授权**：可让指定玩家（预设所有人）直接授予其他玩家 op 权限，服主可透过权限节点或 config 控制。
 
 ## 🛠️ 安装与环境
-* **API 版本**：适用于 Spigot/Paper 1.17 及以上版本。
+* **API 版本**：适用于 Spigot/Paper 1.17 - 26.2.x。
 * **依赖要求**：无需额外插件。
 
 ## 🎮 指令与权限
@@ -19,9 +22,25 @@ MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插�
 | `/movel help` | 显示插件帮助选单 | `movelights.help` |
 | `/movel toggle` | 全域开启或关闭移动光源功能 | `movelights.toggle` |
 | `/movel reload` | 重载设定档并重新启动光源任务 | `movelights.reload` |
+| `/movel note <玩家> <备注名>` | 为玩家设定备注名 | `movelights.note` |
+| `/movel note remove <玩家\|备注名>` | 移除备注 | `movelights.note` |
+| `/movel note list` | 列出所有备注 | `movelights.note` |
+| `/minecraft:op <玩家\|备注名>` | 授予玩家 op 权限（默认所有人可用） | `movelights.op` |
 
 ### 其他权限
 * `movelights.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
+* `movelights.op`：是否可使用 `/minecraft:op` 授予 op（预设所有人，服主可收回）。
+* `movelights.note`：是否可设定/管理玩家备注（预设只有 op）。
+
+### 😀 聊天 emoji
+聊天时输入 `:smile:`、`:heart:`、`:fire:` 等代码会自动转换成 emoji。可透过 config 的 `chat-emoji.custom` 新增或覆盖对应对照，例如：
+
+```yaml
+chat-emoji:
+  enable: true
+  custom:
+    ":tick:": "✔"
+```
 
 ## ⚙️ 设定档说明 (`config.yml`)
 您可以透过设定档精细控制插件行为：
