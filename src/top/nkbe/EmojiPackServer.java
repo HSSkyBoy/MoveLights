@@ -40,7 +40,7 @@ public class EmojiPackServer {
 
     public void start() throws IOException {
         server = new ServerSocket(port);
-        Thread thread = new Thread(this::acceptLoop, "MoveLights-EmojiPack");
+        Thread thread = new Thread(this::acceptLoop, "NyaEeMC-EmojiPack");
         thread.setDaemon(true);
         thread.start();
     }
@@ -98,7 +98,7 @@ public class EmojiPackServer {
         while (server != null && !server.isClosed()) {
             try {
                 Socket socket = server.accept();
-                Thread t = new Thread(() -> handle(socket), "MoveLights-EmojiPack");
+                Thread t = new Thread(() -> handle(socket), "NyaEeMC-EmojiPack");
                 t.setDaemon(true);
                 t.start();
             } catch (IOException ignored) {

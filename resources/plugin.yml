@@ -1,31 +1,32 @@
-name: MoveLights
-main: top.nkbe.MoveLights
-version: 1.3.0
+name: NyaEeMC
+main: top.nkbe.NyaEeMC
+version: 1.4.0
 author: NkBe, _TwT
 api-version: 1.17
 commands:
-  movel:
-    description: 完整命令
+  nyae:
+    description: 主命令
     usage: §a/<command> help 查看帮助
+    aliases: [nyaemc, movel]
 permissions:
-  movelights.help:
+  nyaemc.help:
     description: "查看帮助"
     default: true
-  movelights.reload:
+  nyaemc.reload:
     description: "重载插件配置"
     default: op
-  movelights.toggle:
+  nyaemc.toggle:
     description: "总开关移动光源"
     default: op
-  movelights.player.use:
+  nyaemc.player.use:
     description: "玩家能使用移动光源"
     default: true
-  movelights.player.onoff:
+  nyaemc.player.onoff:
     description: "玩家对自己开关移动光源"
     default: true
-  movelights.note:
+  nyaemc.note:
     description: "设定玩家备注"
     default: op
-  movelights.op:
+  nyaemc.op:
     description: "可使用 /minecraft:op 授予其他玩家 op 权限"
     default: true

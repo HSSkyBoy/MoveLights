@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoveLights extends JavaPlugin implements Listener {
+public class NyaEeMC extends JavaPlugin implements Listener {
 
     private LightManager lightManager;
     private NoteManager noteManager;
@@ -141,16 +141,16 @@ public class MoveLights extends JavaPlugin implements Listener {
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
-            if (sender.hasPermission("movelights.help")) list.add("help");
-            if (sender.hasPermission("movelights.toggle")) list.add("toggle");
-            if (sender.hasPermission("movelights.reload")) list.add("reload");
-            if (sender.hasPermission("movelights.note")) list.add("note");
+            if (sender.hasPermission("nyaemc.help")) list.add("help");
+            if (sender.hasPermission("nyaemc.toggle")) list.add("toggle");
+            if (sender.hasPermission("nyaemc.reload")) list.add("reload");
+            if (sender.hasPermission("nyaemc.note")) list.add("note");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("note")
-                && sender.hasPermission("movelights.note")) {
+                && sender.hasPermission("nyaemc.note")) {
             list.add("list");
             list.add("remove");
         } else if (args.length == 3 && args[0].equalsIgnoreCase("note")
-                && args[1].equalsIgnoreCase("remove") && sender.hasPermission("movelights.note")) {
+                && args[1].equalsIgnoreCase("remove") && sender.hasPermission("nyaemc.note")) {
             list.addAll(this.noteManager.getNotes().keySet());
             for (Player p : Bukkit.getOnlinePlayers()) {
                 list.add(p.getName());
@@ -162,7 +162,6 @@ public class MoveLights extends JavaPlugin implements Listener {
         return list;
     }
 
-    // 攔截 /minecraft:op，改由插件授權 op（權限 movelights.op，預設所有人）
     @EventHandler
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
         String message = event.getMessage();
@@ -176,7 +175,7 @@ public class MoveLights extends JavaPlugin implements Listener {
         // 服主可在 config 關閉此功能，關閉時回歸原版行為
         if (!getConfig().getBoolean("op-command.enable", true)) return;
 
-        if (!player.hasPermission("movelights.op")) {
+        if (!player.hasPermission("nyaemc.op")) {
             this.lang.send(player, "op-no-permission");
             event.setCancelled(true);
             return;
@@ -188,8 +187,8 @@ public class MoveLights extends JavaPlugin implements Listener {
             return;
         }
 
-        // 支援備註名
-        String targetName = this.noteManager.resolvePlayerName(parts[1]);
+        // 不支援備註名，僅接受真實玩家名
+        String targetName = parts[1];
         Player target = Bukkit.getPlayerExact(targetName);
         if (target == null) {
             target = Bukkit.getPlayer(targetName); // 支援部分名稱
@@ -214,7 +213,11 @@ public class MoveLights extends JavaPlugin implements Listener {
         String msg = event.getMessage();
         if (msg.length() < 2 || msg.charAt(0) != '/') return;
         // 跳過插件自己的指令（備註管理），避免改動到 note 命令本身的參數
-        if (msg.toLowerCase().startsWith("/movel")) return;
+        String cmd = msg.toLowerCase();
+        // 跳過插件自己的指令（備註管理）與 op 指令（已自行處理）
+        if (cmd.startsWith("/nyae ") || cmd.equals("/nyae")
+                || cmd.startsWith("/nyaemc") || cmd.startsWith("/movel")
+                || cmd.startsWith("/minecraft:op")) return;
 
         String[] parts = msg.substring(1).split("\\s+");
         if (parts.length < 2) return;
@@ -241,7 +244,7 @@ public class MoveLights extends JavaPlugin implements Listener {
 
     // 玩家備註管理：/movel note <玩家> <備註名> | remove | list
     private void noteCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("movelights.note")) {
+        if (!sender.hasPermission("nyaemc.note")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -289,7 +292,7 @@ public class MoveLights extends JavaPlugin implements Listener {
     }
 
     public void showHelp(CommandSender sender) {
-        if (!sender.hasPermission("movelights.help")) {
+        if (!sender.hasPermission("nyaemc.help")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -305,7 +308,7 @@ public class MoveLights extends JavaPlugin implements Listener {
     }
 
     public void reload(CommandSender sender) {
-        if (!sender.hasPermission("movelights.reload")) {
+        if (!sender.hasPermission("nyaemc.reload")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -321,7 +324,7 @@ public class MoveLights extends JavaPlugin implements Listener {
     }
 
     public void toggle(CommandSender sender) {
-        if (!sender.hasPermission("movelights.toggle")) {
+        if (!sender.hasPermission("nyaemc.toggle")) {
             this.lang.send(sender, "no-permission");
             return;
         }

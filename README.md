@@ -1,5 +1,5 @@
-# MoveLights - 虚拟移动光源插件
-MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插件。它利用「虚拟封包模式」，让玩家在手持或穿戴发光物品时，能够照亮周围环境，且不会对地图方块造成任何实质变更。同时内建**聊天增强**功能（emoji 转换、玩家备注、`/minecraft:op` 授权）。
+# NyaEeMC - 虚拟移动光源 + 聊天增强
+NyaEeMC 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前身 MoveLights）。它利用「虚拟封包模式」，让玩家在手持或穿戴发光物品时，能够照亮周围环境，且不会对地图方块造成任何实质变更。同时内建**聊天增强**功能（emoji 转换、玩家备注、`/minecraft:op` 授权）。
 
 
 ## 🌟 核心特性
@@ -18,25 +18,50 @@ MoveLights 是一款专为 Minecraft 伺服器设计的轻量化移动光源插�
 ### 指令表
 | 指令 | 说明 | 权限要求 |
 | :--- | :--- | :--- |
-| `/movel help` | 显示插件帮助选单 | `movelights.help` |
-| `/movel toggle` | 全域开启或关闭移动光源功能 | `movelights.toggle` |
-| `/movel reload` | 重载设定档并重新启动光源任务 | `movelights.reload` |
-| `/movel note <玩家> <备注名>` | 为玩家设定备注名 | `movelights.note` |
-| `/movel note remove <玩家\|备注名>` | 移除备注 | `movelights.note` |
-| `/movel note list` | 列出所有备注 | `movelights.note` |
+| `/nyae help` | 显示插件帮助选单 | `nyaemc.help` |
+| `/nyae toggle` | 全域开启或关闭移动光源功能 | `nyaemc.toggle` |
+| `/nyae reload` | 重载设定档并重新启动光源任务 | `nyaemc.reload` |
+| `/nyae note <玩家> <备注名>` | 为玩家设定备注名 | `nyaemc.note` |
+| `/nyae note remove <玩家\|备注名>` | 移除备注 | `nyaemc.note` |
+| `/nyae note list` | 列出所有备注 | `nyaemc.note` |
+
+> 主指令为 `/nyae`（别名 `/nyaemc`、`/movel` 保留兼容旧用法）。
 
 ### 其他权限
-* `movelights.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
-* `movelights.note`：是否可设定/管理玩家备注（预设只有 op）。
+* `nyaemc.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
+* `nyaemc.note`：是否可设定/管理玩家备注（预设只有 op）。
 
-### 😀 聊天 emoji
-聊天时输入 `:smile:`、`:heart:`、`:fire:` 等代码会自动转换成 emoji。可透过 config 的 `chat-emoji.custom` 新增或覆盖对应对照，例如：
+### 😀 聊天 emoji 怎麼用
+在聊天室輸入 `:代碼:`，外層的冒號不可省略，插件便會自動轉成 emoji。例如：
+
+```
+肚子好餓 :pizza:
+今天運氣不錯 :star: 加油 :thumbsup:
+```
+
+會顯示為「肚子好餓 🍕」與「今天運氣不錯 ⭐ 加油 👍」。
+
+| 類別 | 可用代碼 |
+| :--- | :--- |
+| 表情 | `:smile:` `:smiley:` `:joy:` `:laughing:` `:wink:` `:blush:` `:cool:` `:sunglasses:` `:thinking:` `:nerd:` `:sad:` `:cry:` `:angry:` `:angryface:` |
+| 愛心 | `:heart:` `:love:` `:kiss:` |
+| 動作 | `:fire:` `:ok:` `:thumbsup:` `:thumbsdown:` `:clap:` `:wave:` `:pray:` |
+| 動物 | `:cat:` `:dog:` `:pig:` `:fox:` |
+| 鬼怪 | `:skull:` `:ghost:` `:alien:` |
+| 天氣 | `:star:` `:sun:` `:moon:` `:rain:` `:cloud:` `:snow:` `:zap:` |
+| 標誌 | `:check:` `:x:` `:exclamation:` `:question:` `:warning:` |
+| 物品 | `:money:` `:gem:` `:gift:` `:cake:` `:beer:` `:pizza:` `:game:` `:music:` `:trophy:` `:medal:` `:rocket:` `:plane:` `:car:` |
+
+Java 玩家需要接受插件推送的內建 Fluent Emoji 3D 資源包，才能看到彩色 emoji；請確認伺服器防火牆已開放 `emoji-pack.port`（預設 `8399`）。Bedrock／Geyser 跨端玩家原生支援 emoji，不需要資源包。
+
+可透過 config 的 `chat-emoji.custom` 新增或覆蓋對照，例如：
 
 ```yaml
 chat-emoji:
   enable: true
   custom:
     ":tick:": "✔"
+    ":doge:": "🐶"
 ```
 
 插件内建 **emoji 资源包**（Microsoft Fluent Emoji 3D，MIT），启动后会自动把资源包推送给 Java 端玩家，让彩色 emoji 正常显示；**Bedrock/Geyser 跨端原生支持 emoji**，不受影响。相关设置：
@@ -49,6 +74,8 @@ emoji-pack:
 ```
 
 > 注意：资源包伺服器端口需在防火墙/机房开放，公网服务器建议在 `host` 填对外网域或 IP。
+
+若 emoji 沒有顯示：確認使用最新版 jar、`emoji-pack.enable: true`、玩家已接受資源包，並檢查 `emoji-pack.host` 是否為玩家可連線的公開位址。代碼拼錯或漏掉冒號時，文字會維持原樣。
 
 ## ⚙️ 设定档说明 (`config.yml`)
 您可以透过设定档精细控制插件行为：
