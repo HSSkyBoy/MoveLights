@@ -11,8 +11,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
@@ -31,6 +33,7 @@ public class NyaEaMc extends JavaPlugin implements Listener {
     private Lang lang;
     private EmojiPackServer emojiPackServer;
     private ChatListener chatListener;
+    private TpaManager tpaManager;
     private Double globalBoatSpeed;
 
     @Override
@@ -39,9 +42,20 @@ public class NyaEaMc extends JavaPlugin implements Listener {
         this.lang = new Lang(this);
         this.noteManager = new NoteManager(this);
         this.nickManager = new NickManager(this);
+        this.tpaManager = new TpaManager(this, this.lang);
         double savedBoatSpeed = getConfig().getDouble("boatfly.global-speed", -1.0D);
         this.globalBoatSpeed = savedBoatSpeed >= 0.1D && savedBoatSpeed <= 50.0D ? savedBoatSpeed : null;
         getServer().getMessenger().registerOutgoingPluginChannel(this, BOATFLY_CHANNEL);
+        getCommand("tpa").setExecutor(this);
+        getCommand("tpa").setTabCompleter(this);
+        getCommand("tpahere").setExecutor(this);
+        getCommand("tpahere").setTabCompleter(this);
+        getCommand("tpaccept").setExecutor(this);
+        getCommand("tpaccept").setTabCompleter(this);
+        getCommand("tpdeny").setExecutor(this);
+        getCommand("tpdeny").setTabCompleter(this);
+        getCommand("tpcancel").setExecutor(this);
+        getCommand("tpcancel").setTabCompleter(this);
 
         Bukkit.getPluginManager().registerEvents(this, this);
         registerChatListener();
@@ -74,6 +88,7 @@ public class NyaEaMc extends JavaPlugin implements Listener {
             this.emojiPackServer.stop();
             this.emojiPackServer = null;
         }
+        if (this.tpaManager != null) this.tpaManager.shutdown();
 
         this.lang.send(Bukkit.getConsoleSender(), "disable-success");
     }
@@ -149,8 +164,19 @@ public class NyaEaMc extends JavaPlugin implements Listener {
             // 玩家退出時清除狀態
             this.lightManager.removePlayerLight(e.getPlayer());
         }
+        if (this.tpaManager != null) this.tpaManager.handleQuit(e.getPlayer());
         String quitMessage = formatServerMessage("chat.quit-message", e.getPlayer().getDisplayName());
         if (quitMessage != null) e.setQuitMessage(quitMessage);
+    }
+
+    @EventHandler
+    public void onPlayerToggleSneak(PlayerToggleSneakEvent event) {
+        if (event.isSneaking() && this.tpaManager != null) this.tpaManager.cancelWarmupBySneak(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onPlayerDeath(PlayerDeathEvent event) {
+        if (this.tpaManager != null) this.tpaManager.handleDeath(event.getEntity());
     }
 
     private String formatServerMessage(String path, String playerName) {
@@ -161,6 +187,7 @@ public class NyaEaMc extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!command.getName().equalsIgnoreCase("nyaea")) return tpaCommand(sender, command, args);
         if (args.length < 1 || args[0].equalsIgnoreCase("help")) {
             this.showHelp(sender);
         } else if (args[0].equalsIgnoreCase("reload")) {
@@ -490,9 +517,32 @@ public class NyaEaMc extends JavaPlugin implements Listener {
         return true;
     }
 
+    private boolean tpaCommand(CommandSender sender, Command command, String[] args) {
+        if (!(sender instanceof Player)) { this.lang.send(sender, "player-only"); return true; }
+        String name = command.getName().toLowerCase();
+        if (name.equals("tpa") || name.equals("tpahere")) {
+            if (!sender.hasPermission(name.equals("tpa") ? "nyaeamc.tpa" : "nyaeamc.tpahere")) { this.lang.send(sender, "no-permission"); return true; }
+            if (args.length != 1) { this.lang.send(sender, name.equals("tpa") ? "tpa-usage" : "tpahere-usage"); return true; }
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target == null) { this.lang.send(sender, "player-notfound", args[0]); return true; }
+            this.tpaManager.sendRequest((Player) sender, target, name.equals("tpa") ? TpaManager.Type.TPA : TpaManager.Type.TPAHERE);
+        } else if (name.equals("tpaccept") || name.equals("tpdeny")) {
+            if (!sender.hasPermission(name.equals("tpaccept") ? "nyaeamc.tpaccept" : "nyaeamc.tpdeny")) { this.lang.send(sender, "no-permission"); return true; }
+            if (args.length > 1) { this.lang.send(sender, name.equals("tpaccept") ? "tpaccept-usage" : "tpdeny-usage"); return true; }
+            if (name.equals("tpaccept")) this.tpaManager.accept((Player) sender, args.length == 0 ? null : args[0]);
+            else this.tpaManager.deny((Player) sender, args.length == 0 ? null : args[0]);
+        } else if (name.equals("tpcancel")) {
+            if (!sender.hasPermission("nyaeamc.tpcancel")) { this.lang.send(sender, "no-permission"); return true; }
+            if (args.length != 0) { this.lang.send(sender, "tpcancel-usage"); return true; }
+            this.tpaManager.cancel((Player) sender);
+        }
+        return true;
+    }
+
     // /nyaea（以及 /movel 相容別名）的 Tab 補全：依權限顯示可用子指令
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+        if (!command.getName().equalsIgnoreCase("nyaea")) return tpaTabComplete(sender, command, args);
         List<String> list = new ArrayList<>();
         if (args.length == 1) {
             if (sender.hasPermission("nyaeamc.help")) list.add("help");
@@ -561,6 +611,19 @@ public class NyaEaMc extends JavaPlugin implements Listener {
 
         String prefix = args.length == 0 ? "" : args[args.length - 1].toLowerCase();
         list.removeIf(s -> !s.toLowerCase().startsWith(prefix));
+        return list;
+    }
+
+    private List<String> tpaTabComplete(CommandSender sender, Command command, String[] args) {
+        List<String> list = new ArrayList<>();
+        String name = command.getName().toLowerCase();
+        if ((name.equals("tpa") || name.equals("tpahere")) && args.length == 1) {
+            for (Player player : Bukkit.getOnlinePlayers()) if (!player.equals(sender)) list.add(player.getName());
+        } else if ((name.equals("tpaccept") || name.equals("tpdeny")) && args.length == 1 && sender instanceof Player) {
+            list.addAll(this.tpaManager.pendingRequesterNames((Player) sender));
+        }
+        String prefix = args.length == 0 ? "" : args[args.length - 1].toLowerCase();
+        list.removeIf(value -> !value.toLowerCase().startsWith(prefix));
         return list;
     }
 

@@ -16,19 +16,31 @@ NyaEaMc 是一款輕量、多功能的 Minecraft 伺服器工具插件，包含�
 
 ## 🎮 指令与权限
 ### 指令表
-| 指令 | 说明 | 权限要求 |
+#### 核心與設定
+
+| 指令 | 說明 | 權限要求 |
 | :--- | :--- | :--- |
-| `/nyaea help` | 显示插件帮助选单 | `nyaeamc.help` |
-| `/nyaea toggle` | 全域开启或关闭移动光源功能 | `nyaeamc.toggle` |
-| `/nyaea reload` | 重载设定档并重新启动光源任务 | `nyaeamc.reload` |
-| `/nyaea note <玩家> <备注名>` | 为玩家设定备注名 | `nyaeamc.note` |
-| `/nyaea note remove <玩家\|备注名>` | 移除备注 | `nyaeamc.note` |
-| `/nyaea note list` | 列出所有备注 | `nyaeamc.note` |
+| `/nyaea help` | 顯示插件說明 | `nyaeamc.help` |
+| `/nyaea toggle` | 全域開關移動光源 | `nyaeamc.toggle` |
+| `/nyaea reload` | 重載設定與光源任務 | `nyaeamc.reload` |
+
+#### 聊天與玩家資料
+
+| 指令 | 說明 | 權限要求 |
+| :--- | :--- | :--- |
+| `/nyaea note <玩家> <備註名>` | 設定玩家備註 | `nyaeamc.note` |
+| `/nyaea note remove <玩家\|備註名>` | 移除備註 | `nyaeamc.note` |
+| `/nyaea note list` | 列出所有備註 | `nyaeamc.note` |
 | `/nyaea nick <暱稱\|off>` | 設定或清除自己的暱稱 | `nyaeamc.nick` |
 | `/nyaea nick <玩家> <暱稱\|off>` | 設定或清除其他玩家的暱稱 | `nyaeamc.nick.others` |
 | `/nyaea realname <暱稱>` | 由暱稱查詢真實玩家名 | `nyaeamc.nick` |
 | `/nyaea ping [玩家]` | 查看延遲 | `nyaeamc.ping`（查他人需 `nyaeamc.ping.others`） |
 | `/nyaea broadcast <訊息>` | 發送全服公告 | `nyaeamc.broadcast` |
+
+#### 管理與伺服器工具
+
+| 指令 | 說明 | 權限要求 |
+| :--- | :--- | :--- |
 | `/nyaea heal [玩家]` | 治療並滅火 | `nyaeamc.heal` |
 | `/nyaea feed [玩家]` | 補滿飢餓與飽和度 | `nyaeamc.feed` |
 | `/nyaea fly [玩家]` | 切換飛行 | `nyaeamc.fly` |
@@ -41,7 +53,18 @@ NyaEaMc 是一款輕量、多功能的 Minecraft 伺服器工具插件，包含�
 | `/nyaea endersee <玩家>` | 開啟線上玩家終界箱 | `nyaeamc.endersee` |
 | `/nyaea boatspeed <0.1-50>` | 強制 BoatFly 全局速度 | `nyaeamc.boatspeed` |
 
+#### 玩家傳送
+
+| 指令 | 說明 | 權限要求 |
+| :--- | :--- | :--- |
+| `/tpa <玩家>` | 請求傳送到指定玩家 | `nyaeamc.tpa` |
+| `/tpahere <玩家>` | 請求指定玩家傳送到自己 | `nyaeamc.tpahere` |
+| `/tpaccept [玩家]` | 接受最新或指定傳送請求 | `nyaeamc.tpaccept` |
+| `/tpdeny [玩家]` | 拒絕最新或指定傳送請求 | `nyaeamc.tpdeny` |
+| `/tpcancel` | 取消自己送出的請求或傳送讀秒 | `nyaeamc.tpcancel` |
+
 > 僅支援主指令 `/nyaea` 與舊版相容別名 `/movel`。
+> TPA 為玩家常用功能，使用獨立指令 `/tpa`、`/tpahere`、`/tpaccept`、`/tpdeny`、`/tpcancel`。
 
 ### 其他权限
 * `nyaeamc.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
@@ -49,6 +72,12 @@ NyaEaMc 是一款輕量、多功能的 Minecraft 伺服器工具插件，包含�
 * `nyaeamc.nick.color`：是否可在暱稱使用 `&` 色碼（預設只有 op）。
 * `nyaeamc.chat.color`：是否可在聊天與公告使用 `&` 色碼（預設只有 op）。
 * `nyaeamc.boatspeed`：是否可強制控制安裝新版 BoatFly 的玩家速度（預設只有 op）。
+* `nyaeamc.tpa.exempt.warmup`：跳過 TPA 接受後的傳送讀秒（預設只有 op）。
+* `nyaeamc.tpa.exempt.cooldown`：跳過成功傳送後的 TPA 請求冷卻（預設只有 op）。
+
+### TPA 設定
+
+`config.yml` 的 `tpa` 區塊可設定請求逾時、接受後讀秒與成功傳送後的冷卻。讀秒中的玩家可蹲下，或輸入 `/tpcancel` 主動取消；冷卻套用於發起請求者，因此 `/tpahere` 不會繞過限制。
 
 ### 😀 聊天 emoji 怎麼用
 在聊天室輸入 `:代碼:`，外層的冒號不可省略，插件便會自動轉成 emoji。例如：

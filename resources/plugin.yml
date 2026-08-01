@@ -8,6 +8,21 @@ commands:
     description: 主命令
     usage: §a/<command> help 查看帮助
     aliases: [movel]
+  tpa:
+    description: 請求傳送到指定玩家
+    usage: §a/tpa <玩家>
+  tpahere:
+    description: 請求指定玩家傳送到你
+    usage: §a/tpahere <玩家>
+  tpaccept:
+    description: 接受傳送請求
+    usage: §a/tpaccept [玩家]
+  tpdeny:
+    description: 拒絕傳送請求
+    usage: §a/tpdeny [玩家]
+  tpcancel:
+    description: 取消自己送出的傳送請求或傳送讀秒
+    usage: §a/tpcancel
 permissions:
   nyaeamc.help:
     description: "查看帮助"
@@ -80,6 +95,27 @@ permissions:
     default: true
   nyaeamc.endersee:
     description: "查看玩家終界箱"
+    default: op
+  nyaeamc.tpa:
+    description: "請求傳送到玩家"
+    default: true
+  nyaeamc.tpahere:
+    description: "請求玩家傳送到自己"
+    default: true
+  nyaeamc.tpaccept:
+    description: "接受傳送請求"
+    default: true
+  nyaeamc.tpdeny:
+    description: "拒絕傳送請求"
+    default: true
+  nyaeamc.tpcancel:
+    description: "取消傳送請求或讀秒"
+    default: true
+  nyaeamc.tpa.exempt.warmup:
+    description: "跳過 TPA 傳送讀秒"
+    default: op
+  nyaeamc.tpa.exempt.cooldown:
+    description: "跳過 TPA 請求冷卻"
     default: op
   nyaeamc.boatspeed:
     description: "強制設定 BoatFly 全局速度"

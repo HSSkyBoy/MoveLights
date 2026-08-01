@@ -87,6 +87,15 @@ boatfly:
   # /boatspeed 設定後會保存並套用給安裝新版 BoatFly 的玩家；-1 代表未設定
   global-speed: -1
 
+# ===== TPA 傳送請求 =====
+tpa:
+  # 請求在此秒數後逾時；設為 0 代表立即逾時
+  request-timeout-seconds: 60
+  # 接受後的傳送讀秒；讀秒期間蹲下或使用 /tpcancel 可取消，設為 0 停用
+  warmup-seconds: 3
+  # 成功傳送後，發起請求者再次發送請求前的冷卻秒數；設為 0 停用
+  cooldown-seconds: 30
+
 # ===== /minecraft:op 指令 =====
 op-command:
   # 是否启用 /minecraft:op 授权指令 (关闭时回归原版行为)
