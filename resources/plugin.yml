@@ -32,7 +32,7 @@ permissions:
     default: true
   nyaeamc.nick:
     description: "設定自己的暱稱"
-    default: true
+    default: op
   nyaeamc.nick.others:
     description: "設定其他玩家的暱稱"
     default: op
@@ -47,7 +47,7 @@ permissions:
     default: true
   nyaeamc.ping.others:
     description: "查看其他玩家的延遲"
-    default: op
+    default: true
   nyaeamc.broadcast:
     description: "發送全服公告"
     default: op
@@ -65,6 +65,21 @@ permissions:
     default: op
   nyaeamc.clearinventory:
     description: "清空背包"
+    default: op
+  nyaeamc.gamemode:
+    description: "設定遊戲模式"
+    default: op
+  nyaeamc.weather:
+    description: "設定天氣"
+    default: op
+  nyaeamc.time:
+    description: "設定世界時間"
+    default: op
+  nyaeamc.invsee:
+    description: "查看玩家背包"
+    default: true
+  nyaeamc.endersee:
+    description: "查看玩家終界箱"
     default: op
   nyaeamc.boatspeed:
     description: "強制設定 BoatFly 全局速度"

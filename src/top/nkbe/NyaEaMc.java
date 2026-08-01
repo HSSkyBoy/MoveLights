@@ -2,6 +2,8 @@ package top.nkbe;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
+import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -185,6 +187,16 @@ public class NyaEaMc extends JavaPlugin implements Listener {
             speedCommand(sender, sliceArgs(args));
         } else if (args[0].equalsIgnoreCase("clearinventory")) {
             clearInventoryCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("gamemode")) {
+            gameModeCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("weather")) {
+            weatherCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("time")) {
+            timeCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("invsee")) {
+            invSeeCommand(sender, sliceArgs(args), false);
+        } else if (args[0].equalsIgnoreCase("endersee")) {
+            invSeeCommand(sender, sliceArgs(args), true);
         } else if (args[0].equalsIgnoreCase("boatspeed")) {
             boatSpeedCommand(sender, sliceArgs(args));
         }
@@ -377,6 +389,82 @@ public class NyaEaMc extends JavaPlugin implements Listener {
         this.lang.send(sender, "clearinventory-success", target.getName());
     }
 
+    private void gameModeCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaeamc.gamemode")) { this.lang.send(sender, "no-permission"); return; }
+        if (args.length < 1 || args.length > 2) { this.lang.send(sender, "gamemode-usage"); return; }
+        GameMode mode = parseGameMode(args[0]);
+        if (mode == null) { this.lang.send(sender, "gamemode-invalid"); return; }
+        Player target = findTarget(sender, args.length == 2 ? new String[]{args[1]} : new String[0], "gamemode-usage");
+        if (target == null) return;
+        target.setGameMode(mode);
+        this.lang.send(sender, "gamemode-success", target.getName(), mode.name().toLowerCase());
+        if (!target.equals(sender)) this.lang.send(target, "gamemode-set-by", mode.name().toLowerCase(), sender.getName());
+    }
+
+    private GameMode parseGameMode(String value) {
+        if (value.equalsIgnoreCase("survival") || value.equalsIgnoreCase("s") || value.equals("0")) return GameMode.SURVIVAL;
+        if (value.equalsIgnoreCase("creative") || value.equalsIgnoreCase("c") || value.equals("1")) return GameMode.CREATIVE;
+        if (value.equalsIgnoreCase("adventure") || value.equalsIgnoreCase("a") || value.equals("2")) return GameMode.ADVENTURE;
+        if (value.equalsIgnoreCase("spectator") || value.equalsIgnoreCase("sp") || value.equals("3")) return GameMode.SPECTATOR;
+        return null;
+    }
+
+    private void weatherCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaeamc.weather")) { this.lang.send(sender, "no-permission"); return; }
+        if (args.length < 1 || args.length > 2) { this.lang.send(sender, "weather-usage"); return; }
+        World world = findWorld(sender, args.length == 2 ? args[1] : null, "weather-usage");
+        if (world == null) return;
+        if (args[0].equalsIgnoreCase("clear")) {
+            world.setStorm(false);
+            world.setThundering(false);
+        } else if (args[0].equalsIgnoreCase("rain")) {
+            world.setStorm(true);
+            world.setThundering(false);
+        } else if (args[0].equalsIgnoreCase("thunder")) {
+            world.setStorm(true);
+            world.setThundering(true);
+        } else { this.lang.send(sender, "weather-usage"); return; }
+        this.lang.send(sender, "weather-success", args[0].toLowerCase(), world.getName());
+    }
+
+    private void timeCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaeamc.time")) { this.lang.send(sender, "no-permission"); return; }
+        if (args.length < 1 || args.length > 2) { this.lang.send(sender, "time-usage"); return; }
+        World world = findWorld(sender, args.length == 2 ? args[1] : null, "time-usage");
+        if (world == null) return;
+        long time;
+        if (args[0].equalsIgnoreCase("day")) time = 1000L;
+        else if (args[0].equalsIgnoreCase("night")) time = 13000L;
+        else {
+            try { time = Long.parseLong(args[0]); }
+            catch (NumberFormatException exception) { this.lang.send(sender, "time-usage"); return; }
+            if (time < 0L || time > 24000L) { this.lang.send(sender, "time-range"); return; }
+        }
+        world.setTime(time);
+        this.lang.send(sender, "time-success", String.valueOf(time), world.getName());
+    }
+
+    private World findWorld(CommandSender sender, String worldName, String usageKey) {
+        if (worldName == null) {
+            if (sender instanceof Player) return ((Player) sender).getWorld();
+            this.lang.send(sender, usageKey);
+            return null;
+        }
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) this.lang.send(sender, "world-notfound", worldName);
+        return world;
+    }
+
+    private void invSeeCommand(CommandSender sender, String[] args, boolean enderChest) {
+        if (!sender.hasPermission(enderChest ? "nyaeamc.endersee" : "nyaeamc.invsee")) { this.lang.send(sender, "no-permission"); return; }
+        if (!(sender instanceof Player)) { this.lang.send(sender, "player-only"); return; }
+        if (args.length != 1) { this.lang.send(sender, enderChest ? "endersee-usage" : "invsee-usage"); return; }
+        Player target = Bukkit.getPlayer(args[0]);
+        if (target == null) { this.lang.send(sender, "player-notfound", args[0]); return; }
+        ((Player) sender).openInventory(enderChest ? target.getEnderChest() : target.getInventory());
+        this.lang.send(sender, enderChest ? "endersee-success" : "invsee-success", target.getName());
+    }
+
     private void boatSpeedCommand(CommandSender sender, String[] args) {
         if (!sender.hasPermission("nyaeamc.boatspeed")) { this.lang.send(sender, "no-permission"); return; }
         if (args.length != 1) { this.lang.send(sender, "boatspeed-usage"); return; }
@@ -402,7 +490,7 @@ public class NyaEaMc extends JavaPlugin implements Listener {
         return true;
     }
 
-    // /movel 的 Tab 補全：依權限顯示可用子指令
+    // /nyaea（以及 /movel 相容別名）的 Tab 補全：依權限顯示可用子指令
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> list = new ArrayList<>();
@@ -420,6 +508,11 @@ public class NyaEaMc extends JavaPlugin implements Listener {
             if (sender.hasPermission("nyaeamc.fly")) list.add("fly");
             if (sender.hasPermission("nyaeamc.speed")) list.add("speed");
             if (sender.hasPermission("nyaeamc.clearinventory")) list.add("clearinventory");
+            if (sender.hasPermission("nyaeamc.gamemode")) list.add("gamemode");
+            if (sender.hasPermission("nyaeamc.weather")) list.add("weather");
+            if (sender.hasPermission("nyaeamc.time")) list.add("time");
+            if (sender.hasPermission("nyaeamc.invsee")) list.add("invsee");
+            if (sender.hasPermission("nyaeamc.endersee")) list.add("endersee");
             if (sender.hasPermission("nyaeamc.boatspeed")) list.add("boatspeed");
         } else if (args[0].equalsIgnoreCase("nick")) {
             if (args.length == 2) list.add("off");
@@ -430,9 +523,27 @@ public class NyaEaMc extends JavaPlugin implements Listener {
                 && sender.hasPermission("nyaeamc.ping.others")) {
             for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
         } else if ((args[0].equalsIgnoreCase("heal") || args[0].equalsIgnoreCase("feed")
-                || args[0].equalsIgnoreCase("fly") || args[0].equalsIgnoreCase("clearinventory"))
+                || args[0].equalsIgnoreCase("fly") || args[0].equalsIgnoreCase("clearinventory")
+                || args[0].equalsIgnoreCase("invsee") || args[0].equalsIgnoreCase("endersee"))
                 && args.length == 2) {
             for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+        } else if (args[0].equalsIgnoreCase("gamemode") && args.length == 2) {
+            list.add("survival");
+            list.add("creative");
+            list.add("adventure");
+            list.add("spectator");
+        } else if (args[0].equalsIgnoreCase("gamemode") && args.length == 3) {
+            for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+        } else if (args[0].equalsIgnoreCase("weather") && args.length == 2) {
+            list.add("clear");
+            list.add("rain");
+            list.add("thunder");
+        } else if (args[0].equalsIgnoreCase("time") && args.length == 2) {
+            list.add("day");
+            list.add("night");
+        } else if ((args[0].equalsIgnoreCase("weather") || args[0].equalsIgnoreCase("time"))
+                && args.length == 3) {
+            for (World world : Bukkit.getWorlds()) list.add(world.getName());
         } else if (args[0].equalsIgnoreCase("speed") && args.length == 2) {
             list.add("walk");
             list.add("fly");
@@ -597,6 +708,7 @@ public class NyaEaMc extends JavaPlugin implements Listener {
         this.lang.sendRaw(sender, "help-nick");
         this.lang.sendRaw(sender, "help-ping");
         this.lang.sendRaw(sender, "help-admin");
+        this.lang.sendRaw(sender, "help-management");
         this.lang.sendRaw(sender, "help-boatspeed");
         this.lang.sendRaw(sender, "help-blank");
     }

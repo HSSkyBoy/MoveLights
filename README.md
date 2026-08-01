@@ -34,6 +34,11 @@ NyaEaMc 是一款輕量、多功能的 Minecraft 伺服器工具插件，包含�
 | `/nyaea fly [玩家]` | 切換飛行 | `nyaeamc.fly` |
 | `/nyaea speed [walk\|fly] <1-10>` | 設定自己的移動速度 | `nyaeamc.speed` |
 | `/nyaea clearinventory [玩家]` | 清空背包 | `nyaeamc.clearinventory` |
+| `/nyaea gamemode <模式> [玩家]` | 設定遊戲模式；支援 `survival`、`creative`、`adventure`、`spectator` | `nyaeamc.gamemode` |
+| `/nyaea weather <clear\|rain\|thunder> [世界]` | 設定天氣 | `nyaeamc.weather` |
+| `/nyaea time <day\|night\|0-24000> [世界]` | 設定世界時間 | `nyaeamc.time` |
+| `/nyaea invsee <玩家>` | 開啟線上玩家背包 | `nyaeamc.invsee` |
+| `/nyaea endersee <玩家>` | 開啟線上玩家終界箱 | `nyaeamc.endersee` |
 | `/nyaea boatspeed <0.1-50>` | 強制 BoatFly 全局速度 | `nyaeamc.boatspeed` |
 
 > 僅支援主指令 `/nyaea` 與舊版相容別名 `/movel`。
@@ -139,6 +144,11 @@ usable:
 
 ## 原作者
 [FlyingQwQ](https://github.com/FlyingQwQ/MoveLight)
+
+## 授權條款
+
+本專案採用 [Apache License 2.0](LICENSE)。
+內嵌的 Microsoft Fluent Emoji 3D 資源仍依其原有 MIT 授權提供。
 
 
 ## 使用统计 (几乎没有)
