@@ -1,5 +1,5 @@
-# NyaEaMc - 虚拟移动光源 + 聊天增强
-NyaEaMc 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前身 MoveLights）。它利用「虚拟封包模式」，让玩家在手持或穿戴发光物品时，能够照亮周围环境，且不会对地图方块造成任何实质变更。同时内建**聊天增强**功能（emoji 转换、玩家备注、`/minecraft:op` 授权）。
+# NyaEaMc - Minecraft 伺服器實用工具插件
+NyaEaMc 是一款輕量、多功能的 Minecraft 伺服器工具插件，包含虛擬移動光源、聊天與 emoji、暱稱、玩家備註、管理指令，以及 BoatFly 全局速度聯動。
 
 
 ## 🌟 核心特性
