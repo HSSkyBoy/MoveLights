@@ -15,10 +15,13 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NyaEeMC extends JavaPlugin implements Listener {
+
+    private static final String BOATFLY_CHANNEL = "boatfly:speed";
 
     private LightManager lightManager;
     private NoteManager noteManager;
@@ -26,6 +29,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     private Lang lang;
     private EmojiPackServer emojiPackServer;
     private ChatListener chatListener;
+    private Double globalBoatSpeed;
 
     @Override
     public void onEnable() {
@@ -33,6 +37,9 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         this.lang = new Lang(this);
         this.noteManager = new NoteManager(this);
         this.nickManager = new NickManager(this);
+        double savedBoatSpeed = getConfig().getDouble("boatfly.global-speed", -1.0D);
+        this.globalBoatSpeed = savedBoatSpeed >= 0.1D && savedBoatSpeed <= 50.0D ? savedBoatSpeed : null;
+        getServer().getMessenger().registerOutgoingPluginChannel(this, BOATFLY_CHANNEL);
 
         Bukkit.getPluginManager().registerEvents(this, this);
         registerChatListener();
@@ -118,6 +125,10 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         }
         String joinMessage = formatServerMessage("chat.join-message", event.getPlayer().getDisplayName());
         if (joinMessage != null) event.setJoinMessage(joinMessage);
+        if (this.globalBoatSpeed != null) {
+            Bukkit.getScheduler().runTaskLater(this,
+                    () -> sendBoatSpeed(event.getPlayer(), this.globalBoatSpeed), 20L);
+        }
     }
 
     //定時重啟
@@ -161,6 +172,24 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             case "broadcast":
                 broadcastCommand(sender, args);
                 return true;
+            case "heal":
+                healCommand(sender, args);
+                return true;
+            case "feed":
+                feedCommand(sender, args);
+                return true;
+            case "fly":
+                flyCommand(sender, args);
+                return true;
+            case "speed":
+                speedCommand(sender, args);
+                return true;
+            case "clearinventory":
+                clearInventoryCommand(sender, args);
+                return true;
+            case "boatspeed":
+                boatSpeedCommand(sender, args);
+                return true;
             default:
                 break;
         }
@@ -180,6 +209,18 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             pingCommand(sender, sliceArgs(args));
         } else if (args[0].equalsIgnoreCase("broadcast")) {
             broadcastCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("heal")) {
+            healCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("feed")) {
+            feedCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("fly")) {
+            flyCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("speed")) {
+            speedCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("clearinventory")) {
+            clearInventoryCommand(sender, sliceArgs(args));
+        } else if (args[0].equalsIgnoreCase("boatspeed")) {
+            boatSpeedCommand(sender, sliceArgs(args));
         }
         return true;
     }
@@ -300,6 +341,101 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         Bukkit.broadcastMessage(this.lang.get("broadcast-format", message));
     }
 
+    private Player findTarget(CommandSender sender, String[] args, String usageKey) {
+        if (args.length == 0 && sender instanceof Player) return (Player) sender;
+        if (args.length == 1) {
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target != null) return target;
+            this.lang.send(sender, "player-notfound", args[0]);
+            return null;
+        }
+        this.lang.send(sender, usageKey);
+        return null;
+    }
+
+    private void healCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.heal")) { this.lang.send(sender, "no-permission"); return; }
+        Player target = findTarget(sender, args, "heal-usage");
+        if (target == null) return;
+        target.setHealth(target.getMaxHealth());
+        target.setFireTicks(0);
+        this.lang.send(sender, "heal-success", target.getName());
+        if (!target.equals(sender)) this.lang.send(target, "healed-by", sender.getName());
+    }
+
+    private void feedCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.feed")) { this.lang.send(sender, "no-permission"); return; }
+        Player target = findTarget(sender, args, "feed-usage");
+        if (target == null) return;
+        target.setFoodLevel(20);
+        target.setSaturation(20.0F);
+        this.lang.send(sender, "feed-success", target.getName());
+        if (!target.equals(sender)) this.lang.send(target, "fed-by", sender.getName());
+    }
+
+    private void flyCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.fly")) { this.lang.send(sender, "no-permission"); return; }
+        Player target = findTarget(sender, args, "fly-usage");
+        if (target == null) return;
+        target.setAllowFlight(!target.getAllowFlight());
+        if (!target.getAllowFlight() && target.isFlying()) target.setFlying(false);
+        this.lang.send(sender, target.getAllowFlight() ? "fly-enabled" : "fly-disabled", target.getName());
+    }
+
+    private void speedCommand(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player)) { this.lang.send(sender, "player-only"); return; }
+        if (!sender.hasPermission("nyaemc.speed")) { this.lang.send(sender, "no-permission"); return; }
+        String mode = "walk";
+        String value;
+        if (args.length == 1) value = args[0];
+        else if (args.length == 2 && (args[0].equalsIgnoreCase("walk") || args[0].equalsIgnoreCase("fly"))) {
+            mode = args[0].toLowerCase();
+            value = args[1];
+        } else { this.lang.send(sender, "speed-usage"); return; }
+        try {
+            float speed = Float.parseFloat(value);
+            if (speed < 1.0F || speed > 10.0F) { this.lang.send(sender, "speed-range"); return; }
+            if (mode.equals("fly")) ((Player) sender).setFlySpeed(speed / 10.0F);
+            else ((Player) sender).setWalkSpeed(speed / 10.0F);
+            this.lang.send(sender, "speed-success", mode, String.valueOf(speed));
+        } catch (IllegalArgumentException exception) {
+            this.lang.send(sender, "speed-usage");
+        }
+    }
+
+    private void clearInventoryCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.clearinventory")) { this.lang.send(sender, "no-permission"); return; }
+        Player target = findTarget(sender, args, "clearinventory-usage");
+        if (target == null) return;
+        target.getInventory().clear();
+        this.lang.send(sender, "clearinventory-success", target.getName());
+    }
+
+    private void boatSpeedCommand(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("nyaemc.boatspeed")) { this.lang.send(sender, "no-permission"); return; }
+        if (args.length != 1) { this.lang.send(sender, "boatspeed-usage"); return; }
+        try {
+            double speed = Double.parseDouble(args[0]);
+            if (speed < 0.1D || speed > 50.0D) { this.lang.send(sender, "boatspeed-range"); return; }
+            this.globalBoatSpeed = speed;
+            getConfig().set("boatfly.global-speed", speed);
+            saveConfig();
+            int count = 0;
+            for (Player player : Bukkit.getOnlinePlayers()) {
+                if (sendBoatSpeed(player, speed)) count++;
+            }
+            this.lang.send(sender, "boatspeed-success", String.format("%.1f", speed), count);
+        } catch (NumberFormatException exception) {
+            this.lang.send(sender, "boatspeed-usage");
+        }
+    }
+
+    private boolean sendBoatSpeed(Player player, double speed) {
+        if (!player.getListeningPluginChannels().contains(BOATFLY_CHANNEL)) return false;
+        player.sendPluginMessage(this, BOATFLY_CHANNEL, ByteBuffer.allocate(8).putDouble(speed).array());
+        return true;
+    }
+
     // /movel 的 Tab 補全：依權限顯示可用子指令
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
@@ -312,6 +448,10 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         } else if (command.getName().equalsIgnoreCase("ping") && args.length == 1
                 && sender.hasPermission("nyaemc.ping.others")) {
             for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+        } else if ((command.getName().equalsIgnoreCase("heal") || command.getName().equalsIgnoreCase("feed")
+                || command.getName().equalsIgnoreCase("fly") || command.getName().equalsIgnoreCase("clearinventory"))
+                && args.length == 1) {
+            for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
         } else if (args.length == 1) {
             if (sender.hasPermission("nyaemc.help")) list.add("help");
             if (sender.hasPermission("nyaemc.toggle")) list.add("toggle");
@@ -321,6 +461,12 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             if (sender.hasPermission("nyaemc.nick")) list.add("realname");
             if (sender.hasPermission("nyaemc.ping")) list.add("ping");
             if (sender.hasPermission("nyaemc.broadcast")) list.add("broadcast");
+            if (sender.hasPermission("nyaemc.heal")) list.add("heal");
+            if (sender.hasPermission("nyaemc.feed")) list.add("feed");
+            if (sender.hasPermission("nyaemc.fly")) list.add("fly");
+            if (sender.hasPermission("nyaemc.speed")) list.add("speed");
+            if (sender.hasPermission("nyaemc.clearinventory")) list.add("clearinventory");
+            if (sender.hasPermission("nyaemc.boatspeed")) list.add("boatspeed");
         } else if (args[0].equalsIgnoreCase("nick")) {
             if (args.length == 2) list.add("off");
             if (args.length == 2 && sender.hasPermission("nyaemc.nick.others")) {
@@ -329,6 +475,13 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         } else if (args[0].equalsIgnoreCase("ping") && args.length == 2
                 && sender.hasPermission("nyaemc.ping.others")) {
             for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+        } else if ((args[0].equalsIgnoreCase("heal") || args[0].equalsIgnoreCase("feed")
+                || args[0].equalsIgnoreCase("fly") || args[0].equalsIgnoreCase("clearinventory"))
+                && args.length == 2) {
+            for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
+        } else if (args[0].equalsIgnoreCase("speed") && args.length == 2) {
+            list.add("walk");
+            list.add("fly");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("note")
                 && sender.hasPermission("nyaemc.note")) {
             list.add("list");
@@ -490,6 +643,8 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         this.lang.sendRaw(sender, "help-emoji");
         this.lang.sendRaw(sender, "help-nick");
         this.lang.sendRaw(sender, "help-ping");
+        this.lang.sendRaw(sender, "help-admin");
+        this.lang.sendRaw(sender, "help-boatspeed");
         this.lang.sendRaw(sender, "help-blank");
     }
 
@@ -501,6 +656,8 @@ public class NyaEeMC extends JavaPlugin implements Listener {
 
         reloadConfig();
         this.lang = new Lang(this);
+        double savedBoatSpeed = getConfig().getDouble("boatfly.global-speed", -1.0D);
+        this.globalBoatSpeed = savedBoatSpeed >= 0.1D && savedBoatSpeed <= 50.0D ? savedBoatSpeed : null;
         registerChatListener();
         if (this.lightManager != null) {
             this.lightManager.removeAllPlayerLight();

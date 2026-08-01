@@ -21,6 +21,25 @@ commands:
     description: 發送全服公告
     usage: §a/broadcast <訊息>
     aliases: [bc]
+  heal:
+    description: 治療玩家
+    usage: §a/heal [玩家]
+  feed:
+    description: 補滿玩家飢餓值
+    usage: §a/feed [玩家]
+  fly:
+    description: 切換飛行
+    usage: §a/fly [玩家]
+  speed:
+    description: 設定移動速度
+    usage: §a/speed [walk|fly] <1-10>
+  clearinventory:
+    description: 清空背包
+    usage: §a/clearinventory [玩家]
+    aliases: [ci]
+  boatspeed:
+    description: 強制設定 BoatFly 全局速度
+    usage: §a/boatspeed <0.1-50>
 permissions:
   nyaemc.help:
     description: "查看帮助"
@@ -63,4 +82,22 @@ permissions:
     default: op
   nyaemc.broadcast:
     description: "發送全服公告"
+    default: op
+  nyaemc.heal:
+    description: "治療玩家"
+    default: op
+  nyaemc.feed:
+    description: "補滿玩家飢餓值"
+    default: op
+  nyaemc.fly:
+    description: "切換飛行"
+    default: op
+  nyaemc.speed:
+    description: "設定移動速度"
+    default: op
+  nyaemc.clearinventory:
+    description: "清空背包"
+    default: op
+  nyaemc.boatspeed:
+    description: "強制設定 BoatFly 全局速度"
     default: op

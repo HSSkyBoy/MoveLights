@@ -82,6 +82,11 @@ chat:
   join-message: "&e{0} 加入了伺服器"
   quit-message: "&e{0} 離開了伺服器"
 
+# ===== BoatFly 聯動 =====
+boatfly:
+  # /boatspeed 設定後會保存並套用給安裝新版 BoatFly 的玩家；-1 代表未設定
+  global-speed: -1
+
 # ===== /minecraft:op 指令 =====
 op-command:
   # 是否启用 /minecraft:op 授权指令 (关闭时回归原版行为)

@@ -29,6 +29,12 @@ NyaEeMC 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前�
 | `/realname <暱稱>` 或 `/nyaee realname <暱稱>` | 由暱稱查詢真實玩家名 | `nyaemc.nick` |
 | `/ping [玩家]` 或 `/nyaee ping [玩家]` | 查看延遲 | `nyaemc.ping`（查他人需 `nyaemc.ping.others`） |
 | `/broadcast <訊息>` 或 `/nyaee broadcast <訊息>` | 發送全服公告 | `nyaemc.broadcast` |
+| `/heal [玩家]` 或 `/nyaee heal [玩家]` | 治療並滅火 | `nyaemc.heal` |
+| `/feed [玩家]` 或 `/nyaee feed [玩家]` | 補滿飢餓與飽和度 | `nyaemc.feed` |
+| `/fly [玩家]` 或 `/nyaee fly [玩家]` | 切換飛行 | `nyaemc.fly` |
+| `/speed [walk\|fly] <1-10>` 或 `/nyaee speed ...` | 設定自己的移動速度 | `nyaemc.speed` |
+| `/clearinventory [玩家]` 或 `/nyaee clearinventory [玩家]` | 清空背包 | `nyaemc.clearinventory` |
+| `/boatspeed <0.1-50>` 或 `/nyaee boatspeed ...` | 強制 BoatFly 全局速度 | `nyaemc.boatspeed` |
 
 > 主指令为 `/nyaee`；`/nyae`、`/nyaemc`、`/movel` 保留为兼容别名。
 
@@ -37,6 +43,7 @@ NyaEeMC 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前�
 * `nyaemc.note`：是否可设定/管理玩家备注（预设只有 op）。
 * `nyaemc.nick.color`：是否可在暱稱使用 `&` 色碼（預設只有 op）。
 * `nyaemc.chat.color`：是否可在聊天與公告使用 `&` 色碼（預設只有 op）。
+* `nyaemc.boatspeed`：是否可強制控制安裝新版 BoatFly 的玩家速度（預設只有 op）。
 
 ### 😀 聊天 emoji 怎麼用
 在聊天室輸入 `:代碼:`，外層的冒號不可省略，插件便會自動轉成 emoji。例如：
@@ -94,6 +101,10 @@ chat:
   join-message: "&e{0} 加入了伺服器" # 使用 {0} 顯示暱稱
   quit-message: "&e{0} 離開了伺服器"
 ```
+
+### 🚤 BoatFly 全局速度
+
+伺服器安裝 NyaEeMC、玩家安裝含聯動功能的新版 BoatFly 後，管理員可用 `/boatspeed 18.5` 強制所有已安裝該模組的在線玩家速度為 18.5；可用範圍為 `0.1–50`。設定會保存於 `boatfly.global-speed`，玩家重新加入時也會重新套用。未安裝新版 BoatFly 的玩家不受影響。
 
 ## ⚙️ 设定档说明 (`config.yml`)
 您可以透过设定档精细控制插件行为：
