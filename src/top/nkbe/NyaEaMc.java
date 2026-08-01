@@ -19,7 +19,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NyaEeMC extends JavaPlugin implements Listener {
+public class NyaEaMc extends JavaPlugin implements Listener {
 
     private static final String BOATFLY_CHANNEL = "boatfly:speed";
 
@@ -159,40 +159,6 @@ public class NyaEeMC extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        switch (command.getName().toLowerCase()) {
-            case "nick":
-                nickCommand(sender, args);
-                return true;
-            case "realname":
-                realNameCommand(sender, args);
-                return true;
-            case "ping":
-                pingCommand(sender, args);
-                return true;
-            case "broadcast":
-                broadcastCommand(sender, args);
-                return true;
-            case "heal":
-                healCommand(sender, args);
-                return true;
-            case "feed":
-                feedCommand(sender, args);
-                return true;
-            case "fly":
-                flyCommand(sender, args);
-                return true;
-            case "speed":
-                speedCommand(sender, args);
-                return true;
-            case "clearinventory":
-                clearInventoryCommand(sender, args);
-                return true;
-            case "boatspeed":
-                boatSpeedCommand(sender, args);
-                return true;
-            default:
-                break;
-        }
         if (args.length < 1 || args[0].equalsIgnoreCase("help")) {
             this.showHelp(sender);
         } else if (args[0].equalsIgnoreCase("reload")) {
@@ -240,7 +206,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         String nickname;
         if (args.length == 1) {
             nickname = args[0];
-        } else if (args.length == 2 && sender.hasPermission("nyaemc.nick.others")) {
+        } else if (args.length == 2 && sender.hasPermission("nyaeamc.nick.others")) {
             target = Bukkit.getPlayer(args[0]);
             if (target == null) {
                 this.lang.send(sender, "player-notfound", args[0]);
@@ -252,11 +218,11 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             return;
         }
 
-        if (target.equals(sender) && !sender.hasPermission("nyaemc.nick")) {
+        if (target.equals(sender) && !sender.hasPermission("nyaeamc.nick")) {
             this.lang.send(sender, "no-permission");
             return;
         }
-        if (!target.equals(sender) && !sender.hasPermission("nyaemc.nick.others")) {
+        if (!target.equals(sender) && !sender.hasPermission("nyaeamc.nick.others")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -271,7 +237,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         }
 
         boolean usesColorCode = nickname.indexOf('&') >= 0 || nickname.indexOf('§') >= 0;
-        if (usesColorCode && !sender.hasPermission("nyaemc.nick.color")) {
+        if (usesColorCode && !sender.hasPermission("nyaeamc.nick.color")) {
             this.lang.send(sender, "nick-color-no-permission");
             return;
         }
@@ -288,7 +254,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void realNameCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.nick")) {
+        if (!sender.hasPermission("nyaeamc.nick")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -305,14 +271,14 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void pingCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.ping")) {
+        if (!sender.hasPermission("nyaeamc.ping")) {
             this.lang.send(sender, "no-permission");
             return;
         }
         Player target;
         if (args.length == 0 && sender instanceof Player) {
             target = (Player) sender;
-        } else if (args.length == 1 && sender.hasPermission("nyaemc.ping.others")) {
+        } else if (args.length == 1 && sender.hasPermission("nyaeamc.ping.others")) {
             target = Bukkit.getPlayer(args[0]);
         } else {
             this.lang.send(sender, "ping-usage");
@@ -326,7 +292,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void broadcastCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.broadcast")) {
+        if (!sender.hasPermission("nyaeamc.broadcast")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -335,7 +301,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             return;
         }
         String message = String.join(" ", args);
-        if (sender.hasPermission("nyaemc.chat.color")) {
+        if (sender.hasPermission("nyaeamc.chat.color")) {
             message = ChatColor.translateAlternateColorCodes('&', message);
         }
         Bukkit.broadcastMessage(this.lang.get("broadcast-format", message));
@@ -354,7 +320,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void healCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.heal")) { this.lang.send(sender, "no-permission"); return; }
+        if (!sender.hasPermission("nyaeamc.heal")) { this.lang.send(sender, "no-permission"); return; }
         Player target = findTarget(sender, args, "heal-usage");
         if (target == null) return;
         target.setHealth(target.getMaxHealth());
@@ -364,7 +330,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void feedCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.feed")) { this.lang.send(sender, "no-permission"); return; }
+        if (!sender.hasPermission("nyaeamc.feed")) { this.lang.send(sender, "no-permission"); return; }
         Player target = findTarget(sender, args, "feed-usage");
         if (target == null) return;
         target.setFoodLevel(20);
@@ -374,7 +340,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void flyCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.fly")) { this.lang.send(sender, "no-permission"); return; }
+        if (!sender.hasPermission("nyaeamc.fly")) { this.lang.send(sender, "no-permission"); return; }
         Player target = findTarget(sender, args, "fly-usage");
         if (target == null) return;
         target.setAllowFlight(!target.getAllowFlight());
@@ -384,7 +350,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
 
     private void speedCommand(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) { this.lang.send(sender, "player-only"); return; }
-        if (!sender.hasPermission("nyaemc.speed")) { this.lang.send(sender, "no-permission"); return; }
+        if (!sender.hasPermission("nyaeamc.speed")) { this.lang.send(sender, "no-permission"); return; }
         String mode = "walk";
         String value;
         if (args.length == 1) value = args[0];
@@ -404,7 +370,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void clearInventoryCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.clearinventory")) { this.lang.send(sender, "no-permission"); return; }
+        if (!sender.hasPermission("nyaeamc.clearinventory")) { this.lang.send(sender, "no-permission"); return; }
         Player target = findTarget(sender, args, "clearinventory-usage");
         if (target == null) return;
         target.getInventory().clear();
@@ -412,7 +378,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     private void boatSpeedCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.boatspeed")) { this.lang.send(sender, "no-permission"); return; }
+        if (!sender.hasPermission("nyaeamc.boatspeed")) { this.lang.send(sender, "no-permission"); return; }
         if (args.length != 1) { this.lang.send(sender, "boatspeed-usage"); return; }
         try {
             double speed = Double.parseDouble(args[0]);
@@ -440,40 +406,28 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         List<String> list = new ArrayList<>();
-        if (command.getName().equalsIgnoreCase("nick")) {
-            if (args.length == 1) list.add("off");
-            if (args.length == 1 && sender.hasPermission("nyaemc.nick.others")) {
-                for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
-            }
-        } else if (command.getName().equalsIgnoreCase("ping") && args.length == 1
-                && sender.hasPermission("nyaemc.ping.others")) {
-            for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
-        } else if ((command.getName().equalsIgnoreCase("heal") || command.getName().equalsIgnoreCase("feed")
-                || command.getName().equalsIgnoreCase("fly") || command.getName().equalsIgnoreCase("clearinventory"))
-                && args.length == 1) {
-            for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
-        } else if (args.length == 1) {
-            if (sender.hasPermission("nyaemc.help")) list.add("help");
-            if (sender.hasPermission("nyaemc.toggle")) list.add("toggle");
-            if (sender.hasPermission("nyaemc.reload")) list.add("reload");
-            if (sender.hasPermission("nyaemc.note")) list.add("note");
-            if (sender.hasPermission("nyaemc.nick")) list.add("nick");
-            if (sender.hasPermission("nyaemc.nick")) list.add("realname");
-            if (sender.hasPermission("nyaemc.ping")) list.add("ping");
-            if (sender.hasPermission("nyaemc.broadcast")) list.add("broadcast");
-            if (sender.hasPermission("nyaemc.heal")) list.add("heal");
-            if (sender.hasPermission("nyaemc.feed")) list.add("feed");
-            if (sender.hasPermission("nyaemc.fly")) list.add("fly");
-            if (sender.hasPermission("nyaemc.speed")) list.add("speed");
-            if (sender.hasPermission("nyaemc.clearinventory")) list.add("clearinventory");
-            if (sender.hasPermission("nyaemc.boatspeed")) list.add("boatspeed");
+        if (args.length == 1) {
+            if (sender.hasPermission("nyaeamc.help")) list.add("help");
+            if (sender.hasPermission("nyaeamc.toggle")) list.add("toggle");
+            if (sender.hasPermission("nyaeamc.reload")) list.add("reload");
+            if (sender.hasPermission("nyaeamc.note")) list.add("note");
+            if (sender.hasPermission("nyaeamc.nick")) list.add("nick");
+            if (sender.hasPermission("nyaeamc.nick")) list.add("realname");
+            if (sender.hasPermission("nyaeamc.ping")) list.add("ping");
+            if (sender.hasPermission("nyaeamc.broadcast")) list.add("broadcast");
+            if (sender.hasPermission("nyaeamc.heal")) list.add("heal");
+            if (sender.hasPermission("nyaeamc.feed")) list.add("feed");
+            if (sender.hasPermission("nyaeamc.fly")) list.add("fly");
+            if (sender.hasPermission("nyaeamc.speed")) list.add("speed");
+            if (sender.hasPermission("nyaeamc.clearinventory")) list.add("clearinventory");
+            if (sender.hasPermission("nyaeamc.boatspeed")) list.add("boatspeed");
         } else if (args[0].equalsIgnoreCase("nick")) {
             if (args.length == 2) list.add("off");
-            if (args.length == 2 && sender.hasPermission("nyaemc.nick.others")) {
+            if (args.length == 2 && sender.hasPermission("nyaeamc.nick.others")) {
                 for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
             }
         } else if (args[0].equalsIgnoreCase("ping") && args.length == 2
-                && sender.hasPermission("nyaemc.ping.others")) {
+                && sender.hasPermission("nyaeamc.ping.others")) {
             for (Player player : Bukkit.getOnlinePlayers()) list.add(player.getName());
         } else if ((args[0].equalsIgnoreCase("heal") || args[0].equalsIgnoreCase("feed")
                 || args[0].equalsIgnoreCase("fly") || args[0].equalsIgnoreCase("clearinventory"))
@@ -483,11 +437,11 @@ public class NyaEeMC extends JavaPlugin implements Listener {
             list.add("walk");
             list.add("fly");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("note")
-                && sender.hasPermission("nyaemc.note")) {
+                && sender.hasPermission("nyaeamc.note")) {
             list.add("list");
             list.add("remove");
         } else if (args.length == 3 && args[0].equalsIgnoreCase("note")
-                && args[1].equalsIgnoreCase("remove") && sender.hasPermission("nyaemc.note")) {
+                && args[1].equalsIgnoreCase("remove") && sender.hasPermission("nyaeamc.note")) {
             list.addAll(this.noteManager.getNotes().keySet());
             for (Player p : Bukkit.getOnlinePlayers()) {
                 list.add(p.getName());
@@ -512,7 +466,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         // 服主可在 config 關閉此功能，關閉時回歸原版行為
         if (!getConfig().getBoolean("op-command.enable", true)) return;
 
-        if (!player.hasPermission("nyaemc.op")) {
+        if (!player.hasPermission("nyaeamc.op")) {
             this.lang.send(player, "op-no-permission");
             event.setCancelled(true);
             return;
@@ -552,8 +506,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
         // 跳過插件自己的指令（備註管理），避免改動到 note 命令本身的參數
         String cmd = msg.toLowerCase();
         // 跳過插件自己的指令（備註管理）與 op 指令（已自行處理）
-        if (cmd.startsWith("/nyaee ") || cmd.equals("/nyaee") || cmd.startsWith("/nyae ") || cmd.equals("/nyae")
-                || cmd.startsWith("/nyaemc") || cmd.startsWith("/movel")
+        if (cmd.startsWith("/nyaea ") || cmd.equals("/nyaea") || cmd.startsWith("/movel")
                 || cmd.startsWith("/minecraft:op")) return;
 
         String[] parts = msg.substring(1).split("\\s+");
@@ -581,7 +534,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
 
     // 玩家備註管理：/movel note <玩家> <備註名> | remove | list
     private void noteCommand(CommandSender sender, String[] args) {
-        if (!sender.hasPermission("nyaemc.note")) {
+        if (!sender.hasPermission("nyaeamc.note")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -629,7 +582,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     public void showHelp(CommandSender sender) {
-        if (!sender.hasPermission("nyaemc.help")) {
+        if (!sender.hasPermission("nyaeamc.help")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -649,7 +602,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     public void reload(CommandSender sender) {
-        if (!sender.hasPermission("nyaemc.reload")) {
+        if (!sender.hasPermission("nyaeamc.reload")) {
             this.lang.send(sender, "no-permission");
             return;
         }
@@ -668,7 +621,7 @@ public class NyaEeMC extends JavaPlugin implements Listener {
     }
 
     public void toggle(CommandSender sender) {
-        if (!sender.hasPermission("nyaemc.toggle")) {
+        if (!sender.hasPermission("nyaeamc.toggle")) {
             this.lang.send(sender, "no-permission");
             return;
         }

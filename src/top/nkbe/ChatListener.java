@@ -42,7 +42,7 @@ public class ChatListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
         String message = event.getMessage();
-        if (colorEnabled && event.getPlayer().hasPermission("nyaemc.chat.color")) {
+        if (colorEnabled && event.getPlayer().hasPermission("nyaeamc.chat.color")) {
             message = org.bukkit.ChatColor.translateAlternateColorCodes('&', message);
         }
         String replaced = enabled ? replaceEmoji(message) : message;

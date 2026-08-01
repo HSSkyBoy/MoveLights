@@ -1,5 +1,5 @@
-# NyaEeMC - 虚拟移动光源 + 聊天增强
-NyaEeMC 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前身 MoveLights）。它利用「虚拟封包模式」，让玩家在手持或穿戴发光物品时，能够照亮周围环境，且不会对地图方块造成任何实质变更。同时内建**聊天增强**功能（emoji 转换、玩家备注、`/minecraft:op` 授权）。
+# NyaEaMc - 虚拟移动光源 + 聊天增强
+NyaEaMc 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前身 MoveLights）。它利用「虚拟封包模式」，让玩家在手持或穿戴发光物品时，能够照亮周围环境，且不会对地图方块造成任何实质变更。同时内建**聊天增强**功能（emoji 转换、玩家备注、`/minecraft:op` 授权）。
 
 
 ## 🌟 核心特性
@@ -18,32 +18,32 @@ NyaEeMC 是一款专为 Minecraft 伺服器设计的轻量化工具插件（前�
 ### 指令表
 | 指令 | 说明 | 权限要求 |
 | :--- | :--- | :--- |
-| `/nyaee help` | 显示插件帮助选单 | `nyaemc.help` |
-| `/nyaee toggle` | 全域开启或关闭移动光源功能 | `nyaemc.toggle` |
-| `/nyaee reload` | 重载设定档并重新启动光源任务 | `nyaemc.reload` |
-| `/nyaee note <玩家> <备注名>` | 为玩家设定备注名 | `nyaemc.note` |
-| `/nyaee note remove <玩家\|备注名>` | 移除备注 | `nyaemc.note` |
-| `/nyaee note list` | 列出所有备注 | `nyaemc.note` |
-| `/nick <暱稱\|off>` 或 `/nyaee nick <暱稱\|off>` | 設定或清除自己的暱稱 | `nyaemc.nick` |
-| `/nick <玩家> <暱稱\|off>` 或 `/nyaee nick <玩家> <暱稱\|off>` | 設定或清除其他玩家的暱稱 | `nyaemc.nick.others` |
-| `/realname <暱稱>` 或 `/nyaee realname <暱稱>` | 由暱稱查詢真實玩家名 | `nyaemc.nick` |
-| `/ping [玩家]` 或 `/nyaee ping [玩家]` | 查看延遲 | `nyaemc.ping`（查他人需 `nyaemc.ping.others`） |
-| `/broadcast <訊息>` 或 `/nyaee broadcast <訊息>` | 發送全服公告 | `nyaemc.broadcast` |
-| `/heal [玩家]` 或 `/nyaee heal [玩家]` | 治療並滅火 | `nyaemc.heal` |
-| `/feed [玩家]` 或 `/nyaee feed [玩家]` | 補滿飢餓與飽和度 | `nyaemc.feed` |
-| `/fly [玩家]` 或 `/nyaee fly [玩家]` | 切換飛行 | `nyaemc.fly` |
-| `/speed [walk\|fly] <1-10>` 或 `/nyaee speed ...` | 設定自己的移動速度 | `nyaemc.speed` |
-| `/clearinventory [玩家]` 或 `/nyaee clearinventory [玩家]` | 清空背包 | `nyaemc.clearinventory` |
-| `/boatspeed <0.1-50>` 或 `/nyaee boatspeed ...` | 強制 BoatFly 全局速度 | `nyaemc.boatspeed` |
+| `/nyaea help` | 显示插件帮助选单 | `nyaeamc.help` |
+| `/nyaea toggle` | 全域开启或关闭移动光源功能 | `nyaeamc.toggle` |
+| `/nyaea reload` | 重载设定档并重新启动光源任务 | `nyaeamc.reload` |
+| `/nyaea note <玩家> <备注名>` | 为玩家设定备注名 | `nyaeamc.note` |
+| `/nyaea note remove <玩家\|备注名>` | 移除备注 | `nyaeamc.note` |
+| `/nyaea note list` | 列出所有备注 | `nyaeamc.note` |
+| `/nyaea nick <暱稱\|off>` | 設定或清除自己的暱稱 | `nyaeamc.nick` |
+| `/nyaea nick <玩家> <暱稱\|off>` | 設定或清除其他玩家的暱稱 | `nyaeamc.nick.others` |
+| `/nyaea realname <暱稱>` | 由暱稱查詢真實玩家名 | `nyaeamc.nick` |
+| `/nyaea ping [玩家]` | 查看延遲 | `nyaeamc.ping`（查他人需 `nyaeamc.ping.others`） |
+| `/nyaea broadcast <訊息>` | 發送全服公告 | `nyaeamc.broadcast` |
+| `/nyaea heal [玩家]` | 治療並滅火 | `nyaeamc.heal` |
+| `/nyaea feed [玩家]` | 補滿飢餓與飽和度 | `nyaeamc.feed` |
+| `/nyaea fly [玩家]` | 切換飛行 | `nyaeamc.fly` |
+| `/nyaea speed [walk\|fly] <1-10>` | 設定自己的移動速度 | `nyaeamc.speed` |
+| `/nyaea clearinventory [玩家]` | 清空背包 | `nyaeamc.clearinventory` |
+| `/nyaea boatspeed <0.1-50>` | 強制 BoatFly 全局速度 | `nyaeamc.boatspeed` |
 
-> 主指令为 `/nyaee`；`/nyae`、`/nyaemc`、`/movel` 保留为兼容别名。
+> 僅支援主指令 `/nyaea` 與舊版相容別名 `/movel`。
 
 ### 其他权限
-* `nyaemc.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
-* `nyaemc.note`：是否可设定/管理玩家备注（预设只有 op）。
-* `nyaemc.nick.color`：是否可在暱稱使用 `&` 色碼（預設只有 op）。
-* `nyaemc.chat.color`：是否可在聊天與公告使用 `&` 色碼（預設只有 op）。
-* `nyaemc.boatspeed`：是否可強制控制安裝新版 BoatFly 的玩家速度（預設只有 op）。
+* `nyaeamc.player.use`：玩家是否能使用移动光源功能的基础权限（预设所有人拥有）。
+* `nyaeamc.note`：是否可设定/管理玩家备注（预设只有 op）。
+* `nyaeamc.nick.color`：是否可在暱稱使用 `&` 色碼（預設只有 op）。
+* `nyaeamc.chat.color`：是否可在聊天與公告使用 `&` 色碼（預設只有 op）。
+* `nyaeamc.boatspeed`：是否可強制控制安裝新版 BoatFly 的玩家速度（預設只有 op）。
 
 ### 😀 聊天 emoji 怎麼用
 在聊天室輸入 `:代碼:`，外層的冒號不可省略，插件便會自動轉成 emoji。例如：
@@ -92,7 +92,7 @@ emoji-pack:
 若 emoji 沒有顯示：確認使用最新版 jar、`emoji-pack.enable: true`、玩家已接受資源包，並檢查 `emoji-pack.host` 是否為玩家可連線的公開位址。代碼拼錯或漏掉冒號時，文字會維持原樣。
 
 ### 💬 聊天與暱稱
-`/nick <暱稱>` 或 `/nyaee nick <暱稱>` 會同步更新聊天、Tab 列表與玩家頭上的顯示名稱，資料保存在 `nicknames.yml`，重進伺服器後仍會套用。以 `/nick off` 或 `/nyaee nick off` 還原真實名稱。
+`/nyaea nick <暱稱>` 會同步更新聊天、Tab 列表與玩家頭上的顯示名稱，資料保存在 `nicknames.yml`，重進伺服器後仍會套用。以 `/nyaea nick off` 還原真實名稱。
 
 ```yaml
 chat:
@@ -104,7 +104,7 @@ chat:
 
 ### 🚤 BoatFly 全局速度
 
-伺服器安裝 NyaEeMC、玩家安裝含聯動功能的新版 BoatFly 後，管理員可用 `/boatspeed 18.5` 強制所有已安裝該模組的在線玩家速度為 18.5；可用範圍為 `0.1–50`。設定會保存於 `boatfly.global-speed`，玩家重新加入時也會重新套用。未安裝新版 BoatFly 的玩家不受影響。
+伺服器安裝 NyaEaMc、玩家安裝含聯動功能的新版 BoatFly 後，管理員可用 `/nyaea boatspeed 18.5` 強制所有已安裝該模組的在線玩家速度為 18.5；可用範圍為 `0.1–50`。設定會保存於 `boatfly.global-speed`，玩家重新加入時也會重新套用。未安裝新版 BoatFly 的玩家不受影響。
 
 ## ⚙️ 设定档说明 (`config.yml`)
 您可以透过设定档精细控制插件行为：

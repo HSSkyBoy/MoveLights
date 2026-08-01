@@ -77,7 +77,7 @@ chat-emoji:
 
 chat:
   color:
-    # 允許擁有 nyaemc.chat.color 權限的玩家在聊天使用 & 色碼
+    # 允許擁有 nyaeamc.chat.color 權限的玩家在聊天使用 & 色碼
     enable: true
   join-message: "&e{0} 加入了伺服器"
   quit-message: "&e{0} 離開了伺服器"

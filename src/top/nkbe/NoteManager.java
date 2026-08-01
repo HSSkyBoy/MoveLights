@@ -11,7 +11,7 @@ import java.util.Map;
 /**
  * 玩家備註管理：為玩家設定別名（備註名）。
  * 設定備註後，任何需要玩家名的指令都可以直接用備註名代替。
- * 資料儲存於 plugins/NyaEeMC/notes.yml
+ * 資料儲存於 plugins/NyaEaMc/notes.yml
  */
 public class NoteManager {
 
